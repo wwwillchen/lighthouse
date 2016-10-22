@@ -16,7 +16,7 @@
  */
 
 /**
- * @fileoverview Tests whether the page is using Date.now().
+ * @fileoverview Tests whether the page is using mutation events.
  */
 
 'use strict';
