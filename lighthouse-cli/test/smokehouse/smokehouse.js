@@ -83,6 +83,7 @@ function runLighthouse(url, configPath) {
     `--config-path=${configPath}`,
     '--output=json',
     `--output-path=${outputPath}`,
+    '--verbose'
   ].join(' ');
 
   execSync(command + ' ' + options, {
