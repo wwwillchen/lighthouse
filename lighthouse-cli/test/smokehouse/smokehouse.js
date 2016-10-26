@@ -79,8 +79,7 @@ function runLighthouse(url, configPath) {
   const command = `node ${harmony} lighthouse-cli/index.js ${url}`;
   const options = [
     `--config-path=${configPath}`,
-    '--output=json',
-    // '--quiet'
+    '--output=json'
   ].join(' ');
 
   const rawResults = execSync(command + ' ' + options, {
