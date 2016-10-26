@@ -87,7 +87,7 @@ function runLighthouse(url, configPath) {
     encoding: 'utf8',
     stdio: 'inherit'
   });
-  console.log(rawResults);
+  // console.log(rawResults);
   return JSON.parse(rawResults);
 }
 
