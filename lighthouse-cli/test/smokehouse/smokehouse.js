@@ -17,6 +17,7 @@
  */
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const execSync = require('child_process').execSync;
 const yargs = require('yargs');
@@ -77,16 +78,20 @@ function runLighthouse(url, configPath) {
   // run Lighthouse with --harmony flag.
   const harmony = /v4/.test(process.version) ? '--harmony' : '';
   const command = `node ${harmony} lighthouse-cli/index.js ${url}`;
+  const outputPath = './smoke-results.json';
   const options = [
     `--config-path=${configPath}`,
-    '--output=json'
+    '--output=json',
+    `--output-path=${outputPath}`,
   ].join(' ');
 
-  const rawResults = execSync(command + ' ' + options, {
+  execSync(command + ' ' + options, {
     encoding: 'utf8',
     stdio: 'inherit'
   });
-  // console.log(rawResults);
+  const rawResults = fs.readFileSync(outputPath, 'utf8');
+  fs.unlinkSync(outputPath);
+
   return JSON.parse(rawResults);
 }
 
@@ -131,10 +136,10 @@ function collateResults(actual, expected) {
  */
 function reportAssertion(assertion) {
   if (assertion.equal) {
-    console.log(`  ${GREEN_CHECK} ${assertion.category}: ` +
+    console.log(`${GREEN_CHECK} ${assertion.category}: ` +
         greenify(assertion.actual));
   } else {
-    console.log(`  ${RED_X} ${assertion.category}: ` +
+    console.log(`${RED_X} ${assertion.category}: ` +
         redify(`found ${assertion.actual}, expected ${assertion.expected}`));
   }
 }
@@ -190,6 +195,7 @@ let failingCount = 0;
 expectations.forEach(expected => {
   console.log(`Checking '${expected.initialUrl}'...`);
   const results = runLighthouse(expected.initialUrl, configPath);
+  console.log('');
   const collated = collateResults(results, expected);
   const counts = report(collated);
   passingCount += counts.passed;
