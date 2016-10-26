@@ -187,6 +187,9 @@ function launchChromeAndRun(addresses: Array<string>,
       log.log('Lighthouse CLI', 'Launching Chrome...');
       return launcher.run();
     })
+    .then(() => {
+      log.log('Lighthouse CLI', 'Chrome launched');
+    })
     .then(() => lighthouseRun(addresses, config))
     .then(() => launcher.kill());
 }
@@ -197,6 +200,7 @@ function lighthouseRun(addresses: Array<string>, config: Object) {
   if (!address) {
     return;
   }
+  log.log('Lighthouse CLI', `About to run lighthouse module on ${address}`);
 
   return lighthouse(address, flags, config)
     .then((results: Results) => Printer.write(results, outputMode, outputPath))

@@ -187,7 +187,9 @@ class ChromeLauncher {
             delay(launcher.pollInterval).then(poll);
           });
       })();
-    });
+    }).then(_ => {
+      log.log('ChromeLauncher', 'Chrome now considered "ready"');
+    })
   }
 
   kill(): Promise<undefined> {

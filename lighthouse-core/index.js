@@ -55,10 +55,14 @@ module.exports = function(url, flags, configJSON) {
     flags.logLevel = flags.logLevel || 'error';
     log.setLevel(flags.logLevel);
 
+    log.log('index', `Now running Lighthouse on ${url}!`);
+
     // Use ConfigParser to generate a valid config file
     const config = new Config(configJSON, flags.configPath);
+    log.log('index', 'Config parsed!');
 
     const connection = new ChromeProtocol();
+    log.log('index', 'Protocol created!');
 
     // kick off a lighthouse run
     resolve(Runner.run(connection, {url, flags, config}));

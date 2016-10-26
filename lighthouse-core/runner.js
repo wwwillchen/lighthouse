@@ -27,6 +27,7 @@ const url = require('url');
 
 class Runner {
   static run(connection, opts) {
+    log.log('Runner', 'Now inside runner!');
     // Clean opts input.
     opts.flags = opts.flags || {};
 
@@ -60,12 +61,15 @@ class Runner {
     // Make a run, which can be .then()'d with whatever needs to run (based on the config).
     let run = Promise.resolve();
 
+    log.log('Runner', 'Starting up runner passes!');
     // If there are passes run the GatherRunner and gather the artifacts. If not, we will need
     // to check that there are artifacts specified in the config, and throw if not.
     if (validPassesAndAudits || validArtifactsAndAudits) {
       if (validPassesAndAudits) {
+        log.log('Runner', 'Creating Driver!');
         opts.driver = opts.driverMock || new Driver(connection);
         // Finally set up the driver to gather.
+        log.log('Runner', 'About to run GatherRunner!');
         run = run.then(_ => GatherRunner.run(config.passes, opts));
       } else if (validArtifactsAndAudits) {
         run = run.then(_ => {

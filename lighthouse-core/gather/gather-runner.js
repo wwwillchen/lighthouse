@@ -186,6 +186,7 @@ class GatherRunner {
   }
 
   static run(passes, options) {
+    log.log('GatherRunner', 'Inside GatherRunner!');
     const driver = options.driver;
     const tracingData = {
       traces: {},
@@ -209,8 +210,10 @@ class GatherRunner {
       options.flags.disableCpuThrottling = true;
     }
 
+    log.log('GatherRunner', 'Instantiating Gatherers!');
     passes = this.instantiateGatherers(passes, options.config.configDir);
 
+    log.log('GatherRunner', 'About to connect to the driver!');
     return driver.connect()
       .then(_ => GatherRunner.setupDriver(driver, options))
 
