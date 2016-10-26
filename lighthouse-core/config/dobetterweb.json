@@ -10,7 +10,6 @@
       "../gather/gatherers/dobetterweb/datenow",
       "../gather/gatherers/dobetterweb/document-event-listeners",
       "../gather/gatherers/dobetterweb/document-write",
-      "../gather/gatherers/dobetterweb/mutation-events",
       "../gather/gatherers/dobetterweb/websql"
     ]
   }],

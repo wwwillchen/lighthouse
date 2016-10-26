@@ -18,12 +18,14 @@
 const NoMutationEventsAudit = require('../../../audits/dobetterweb/no-mutation-events.js');
 const assert = require('assert');
 
+const fixtureData = require('../../fixtures/page-level-event-listeners.json');
+
 const URL = 'https://example.com';
 
 /* eslint-env mocha */
 
 describe('Page does not use mutation events', () => {
-  it('fails when no input present', () => {
+  it('it returns error value when no input present', () => {
     const auditResult = NoMutationEventsAudit.audit({});
     assert.equal(auditResult.rawValue, -1);
     assert.ok(auditResult.debugString);
@@ -31,21 +33,7 @@ describe('Page does not use mutation events', () => {
 
   it('passes when mutation events are not used', () => {
     const auditResult = NoMutationEventsAudit.audit({
-      MutationEventUse: {usage: []},
-      URL: {finalUrl: URL},
-    });
-    assert.equal(auditResult.rawValue, true);
-    assert.equal(auditResult.extendedInfo.value.length, 0);
-  });
-
-  it('passes when mutation events are used on a different origin', () => {
-    const auditResult = NoMutationEventsAudit.audit({
-      MutationEventUse: {
-        usage: [
-          {url: 'http://different.com/two', line: 2, col: 2},
-          {url: 'http://example2.com/two', line: 2, col: 22}
-        ]
-      },
+      PageLevelEventListeners: [],
       URL: {finalUrl: URL},
     });
     assert.equal(auditResult.rawValue, true);
@@ -54,16 +42,10 @@ describe('Page does not use mutation events', () => {
 
   it('fails when mutation events are used on the origin', () => {
     const auditResult = NoMutationEventsAudit.audit({
-      MutationEventUse: {
-        usage: [
-          {url: 'http://example.com/one', line: 1, col: 1},
-          {url: 'http://example.com/two', line: 10, col: 1},
-          {url: 'http://example2.com/two', line: 2, col: 22}
-        ]
-      },
+      PageLevelEventListeners: fixtureData,
       URL: {finalUrl: URL},
     });
     assert.equal(auditResult.rawValue, false);
-    assert.equal(auditResult.extendedInfo.value.length, 2);
+    assert.equal(auditResult.extendedInfo.value.length, 3);
   });
 });

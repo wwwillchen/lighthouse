@@ -26,6 +26,18 @@ const url = require('url');
 const Audit = require('../audit');
 const Formatter = require('../../formatters/formatter');
 
+const MUTATION_EVENTS = [
+  'DOMAttrModified',
+  'DOMAttributeNameChanged',
+  'DOMCharacterDataModified',
+  'DOMElementNameChanged',
+  'DOMNodeInserted',
+  'DOMNodeInsertedIntoDocument',
+  'DOMNodeRemoved',
+  'DOMNodeRemovedFromDocument',
+  'DOMSubtreeModified'
+];
+
 class NoMutationEventsAudit extends Audit {
 
   /**
@@ -37,7 +49,7 @@ class NoMutationEventsAudit extends Audit {
       name: 'no-mutation-events',
       description: 'Site does not use Mutation Events in its own scripts',
       helpText: 'Using <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Mutation_events" target="_blank">Mutation events</a> degrades application performance. They are deprecated in the DOM events spec, replaced by <a href="https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver" target="_blank">MutationObservers</a>.',
-      requiredArtifacts: ['URL', 'MutationEventUse']
+      requiredArtifacts: ['URL', 'PageLevelEventListeners']
     };
   }
 
@@ -46,22 +58,31 @@ class NoMutationEventsAudit extends Audit {
    * @return {!AuditResult}
    */
   static audit(artifacts) {
-    if (typeof artifacts.MutationEventUse === 'undefined' ||
-        artifacts.MutationEventUse === -1) {
+    if (typeof artifacts.PageLevelEventListeners === 'undefined' ||
+        artifacts.PageLevelEventListeners === -1) {
       return NoMutationEventsAudit.generateAuditResult({
         rawValue: -1,
-        debugString: 'MutationEventUse gatherer did not run'
+        debugString: 'PageLevelEventListeners gatherer did not run'
       });
+    } else if (artifacts.PageLevelEventListeners.rawValue === -1) {
+      return NoMutationEventsAudit.generateAuditResult(artifacts.PageLevelEventListeners);
     }
 
+    const listeners = artifacts.PageLevelEventListeners;
+
     const pageHost = url.parse(artifacts.URL.finalUrl).host;
-    // Filter usage from other hosts.
-    const results = artifacts.MutationEventUse.usage.filter(err => {
-      return url.parse(err.url).host === pageHost;
-    }).map(err => {
+
+    // Filter out non-passive window/document/document.body listeners that do
+    // not call preventDefault() are scroll blocking events.
+    const results = listeners.filter(loc => {
+      const isMutationEvent = MUTATION_EVENTS.indexOf(loc.type) !== -1;
+      const sameHost = url.parse(loc.url).host === pageHost;
+      return sameHost && isMutationEvent;
+    }).map(loc => {
       return Object.assign({
-        label: `line: ${err.line}, col: ${err.col}`
-      }, err);
+        label: `line: ${loc.line}, col: ${loc.col}`,
+        code: `${loc.objectId}.addEventListener('${loc.type}', ${loc.handler.description})`
+      }, loc);
     });
 
     return NoMutationEventsAudit.generateAuditResult({
