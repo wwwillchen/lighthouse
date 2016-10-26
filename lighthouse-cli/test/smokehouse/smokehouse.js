@@ -80,10 +80,14 @@ function runLighthouse(url, configPath) {
   const options = [
     `--config-path=${configPath}`,
     '--output=json',
-    '--quiet'
+    // '--quiet'
   ].join(' ');
 
-  const rawResults = execSync(command + ' ' + options, {encoding: 'utf8'});
+  const rawResults = execSync(command + ' ' + options, {
+    encoding: 'utf8',
+    stdio: 'inherit'
+  });
+  console.log(rawResults);
   return JSON.parse(rawResults);
 }
 
