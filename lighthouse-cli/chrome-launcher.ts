@@ -119,7 +119,7 @@ class ChromeLauncher {
         this.flags(),
         {
           detached: true,
-          stdio: ['ignore', this.outFile, this.errFile]
+          stdio: 'inherit'
         }
       );
       this.chrome = chrome;
