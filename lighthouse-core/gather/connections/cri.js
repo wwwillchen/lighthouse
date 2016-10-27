@@ -60,7 +60,6 @@ class CriConnection extends Connection {
         hostname: hostname,
         port: port,
         path: '/json/' + command,
-        timeout: 10000,
       }, response => {
         log.log('CriConnection', 'some kind of response from jsonCommand');
         var data = '';
@@ -78,6 +77,12 @@ class CriConnection extends Connection {
           }
           reject('Unable to fetch webSocketDebuggerUrl, status: ' + response.statusCode);
         });
+      });
+
+      request.setTimeout(10000, _ => {
+        log.log('CriConnection', '_runJsonCommand timed out!');
+        request.abort();
+        reject('Unable to connect to debugger protocol http endpoint');
       });
 
       request.on('error', err => {
