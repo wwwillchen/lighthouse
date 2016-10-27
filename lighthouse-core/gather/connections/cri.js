@@ -21,6 +21,7 @@ const WebSocket = require('ws');
 const http = require('http');
 const hostname = 'localhost';
 const port = process.env.PORT || 9222;
+const log = require('../../lib/log.js');
 
 class CriConnection extends Connection {
   /**
@@ -29,16 +30,22 @@ class CriConnection extends Connection {
    */
   connect() {
     return this._runJsonCommand('new').then(response => {
+      log.log('CriConnection', '_runJsonCommand returned');
       const url = response.webSocketDebuggerUrl;
+      log.log('CriConnection', 'websocket url acquired! ' + url);
       return new Promise((resolve, reject) => {
         const ws = new WebSocket(url);
         ws.on('open', () => {
+          log.log('CriConnection', 'web socket opened!');
           this._ws = ws;
           resolve();
         });
         ws.on('message', data => this.handleRawMessage(data));
         ws.on('close', this.dispose.bind(this));
-        ws.on('error', reject);
+        ws.on('error', _ => {
+          log.log('CriConnection', 'Error in web socket!');
+          reject();
+        });
       });
     });
   }
@@ -48,17 +55,23 @@ class CriConnection extends Connection {
    */
   _runJsonCommand(command) {
     return new Promise((resolve, reject) => {
+      log.log('CriConnection', 'running _runJsonCommand, waiting for response...');
       http.get({
         hostname: hostname,
         port: port,
         path: '/json/' + command
       }, response => {
+        log.log('CriConnection', 'some kind of response from jsonCommand');
         var data = '';
         response.on('data', chunk => {
+          log.log('CriConnection', 'jsonCommand data came in: ' + chunk);
           data += chunk;
         });
         response.on('end', _ => {
+          log.log('CriConnection', 'end of response from jsonCommand. statusCode: ' +
+              response.statusCode);
           if (response.statusCode === 200) {
+            log.log('CriConnection', 'successful jsonCommand! data: ' + data);
             resolve(JSON.parse(data));
             return;
           }

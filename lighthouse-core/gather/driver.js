@@ -63,6 +63,7 @@ class Driver {
    * @return {!Promise<null>}
    */
   connect() {
+    log.log('Driver', 'Attempting to connect on connection!');
     return this._connection.connect();
   }
 
