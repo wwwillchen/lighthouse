@@ -77,6 +77,8 @@ class CriConnection extends Connection {
           }
           reject('Unable to fetch webSocketDebuggerUrl, status: ' + response.statusCode);
         });
+      }).on('error', err => {
+        log.log('CriConnection', `error in _runJsonCommand: ${err.message}`, JSON.stringify(err));
       });
     });
   }
