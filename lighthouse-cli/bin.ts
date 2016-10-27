@@ -188,7 +188,16 @@ function launchChromeAndRun(addresses: Array<string>,
       return launcher.run();
     })
     .then(() => {
-      log.log('Lighthouse CLI', 'Chrome launched');
+      log.log('Lighthouse CLI', 'Chrome launched! Pausing...');
+    })
+    .then(() => {
+      return new Promise((resolve, reject) => {
+        const pauseTime = 5000;
+        setTimeout(() => {
+          log.log('Lighthouse CLI', `Pause of ${pauseTime}ms after Chrome launch complete`);
+          resolve();
+        }, pauseTime);
+      });
     })
     .then(() => lighthouseRun(addresses, config))
     .then(() => launcher.kill());
