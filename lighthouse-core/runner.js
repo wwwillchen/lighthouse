@@ -68,8 +68,9 @@ class Runner {
       if (validPassesAndAudits) {
         log.log('Runner', 'Creating Driver!');
         opts.driver = opts.driverMock || new Driver(connection);
+
         // Finally set up the driver to gather.
-        log.log('Runner', 'About to run GatherRunner!');
+        log.log('Runner', 'About to run GatherRuner!');
         run = run.then(_ => GatherRunner.run(config.passes, opts));
       } else if (validArtifactsAndAudits) {
         run = run.then(_ => {
