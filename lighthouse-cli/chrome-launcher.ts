@@ -40,18 +40,20 @@ class ChromeLauncher {
   errFile: number
   pidFile: string
   chrome: childProcess.ChildProcess
+  port: number
 
   // We can not use default args here due to support node pre 6.
-  constructor(opts?: {autoSelectChrome?: Boolean}) {
+  constructor(opts?: {autoSelectChrome?: Boolean, port?: number}) {
     opts = opts || {};
 
     // choose the first one (default)
     this.autoSelectChrome = defaults(opts.autoSelectChrome, true);
+    this.port = opts.port || 9222;
   }
 
   flags() {
     const flags = [
-      '--remote-debugging-port=9222',
+      `--remote-debugging-port=${this.port}`,
       '--disable-extensions',
       '--no-first-run',
       `--user-data-dir=${this.TMP_PROFILE_DIR}`
@@ -144,7 +146,7 @@ class ChromeLauncher {
   // resolves if ready, rejects otherwise
   isDebuggerReady(): Promise<undefined> {
     return new Promise((resolve, reject) => {
-      const client = net.createConnection(9222);
+      const client = net.createConnection(this.port);
       client.once('error', err => {
         this.cleanup(client);
         reject(err);

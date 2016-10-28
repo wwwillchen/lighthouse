@@ -67,6 +67,10 @@ function resolveLocalOrCwd(payloadPath) {
   return resolved;
 }
 
+function random(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
 /**
  * Launch Chrome and do a full Lighthouse run.
  * @param {string} url
@@ -79,11 +83,14 @@ function runLighthouse(url, configPath) {
   const harmony = /v4/.test(process.version) ? '--harmony' : '';
   const command = `node ${harmony} lighthouse-cli/index.js ${url}`;
   const outputPath = './smoke-results.json';
+  const port = random(9000, 10000);
+  console.log('going to use port ' + port);
   const options = [
     `--config-path=${configPath}`,
     '--output=json',
     `--output-path=${outputPath}`,
-    '--verbose'
+    '--verbose',
+    `--port=${port}`
   ].join(' ');
 
   execSync(command + ' ' + options, {

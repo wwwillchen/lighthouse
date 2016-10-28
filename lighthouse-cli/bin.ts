@@ -68,7 +68,8 @@ const cli = yargs
     'list-all-audits',
     'list-trace-categories',
     'config-path',
-    'perf'
+    'perf',
+    'port',
   ], 'Configuration:')
   .describe({
     'disable-device-emulation': 'Disable Nexus 5X emulation',
@@ -171,11 +172,12 @@ const cleanup: {fns: Array<Function>,
 
 function launchChromeAndRun(addresses: Array<string>,
                             config: Object,
-                            opts?: {selectChrome: boolean}) {
+                            opts?: {port: number, selectChrome: boolean}) {
 
   opts = opts || cli;
 
   const launcher = new ChromeLauncher({
+    port: opts.port,
     autoSelectChrome: !opts.selectChrome,
   });
 

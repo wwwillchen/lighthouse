@@ -20,10 +20,17 @@ const Connection = require('./connection.js');
 const WebSocket = require('ws');
 const http = require('http');
 const hostname = 'localhost';
-const port = process.env.PORT || 9222;
+// const port = process.env.PORT || 9222;
 const log = require('../../lib/log.js');
 
 class CriConnection extends Connection {
+  constructor(port) {
+    super();
+
+    log.log('CriConnection', 'Going to connect on port ' + port);
+    this.port = port;
+  }
+
   /**
    * @override
    * @return {!Promise}
@@ -58,7 +65,7 @@ class CriConnection extends Connection {
       log.log('CriConnection', 'running _runJsonCommand, waiting for response...');
       const request = http.get({
         hostname: hostname,
-        port: port,
+        port: this.port,
         path: '/json/' + command,
       }, response => {
         log.log('CriConnection', 'some kind of response from jsonCommand');

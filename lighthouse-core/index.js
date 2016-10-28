@@ -61,7 +61,7 @@ module.exports = function(url, flags, configJSON) {
     const config = new Config(configJSON, flags.configPath);
     log.log('index', 'Config parsed!');
 
-    const connection = new ChromeProtocol();
+    const connection = new ChromeProtocol(flags.port);
     log.log('index', 'Protocol created!');
 
     // kick off a lighthouse run
