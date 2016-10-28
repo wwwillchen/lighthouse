@@ -194,7 +194,7 @@ function launchChromeAndRun(addresses: Array<string>,
     })
     .then(() => {
       return new Promise((resolve, reject) => {
-        const pauseTime = 5000;
+        const pauseTime = 1000;
         setTimeout(() => {
           log.log('Lighthouse CLI', `Pause of ${pauseTime}ms after Chrome launch complete`);
           resolve();

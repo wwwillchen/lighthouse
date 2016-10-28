@@ -202,12 +202,17 @@ let passingCount = 0;
 let failingCount = 0;
 expectations.forEach(expected => {
   console.log(`Checking '${expected.initialUrl}'...`);
-  const results = runLighthouse(expected.initialUrl, configPath);
-  console.log('');
-  const collated = collateResults(results, expected);
-  const counts = report(collated);
-  passingCount += counts.passed;
-  failingCount += counts.failed;
+  try {
+    const results = runLighthouse(expected.initialUrl, configPath);
+    console.log('');
+    const collated = collateResults(results, expected);
+    const counts = report(collated);
+    passingCount += counts.passed;
+    failingCount += counts.failed;
+  } catch (e) {
+    console.log('smokehouse run failed:', e);
+    console.log('moving to next smokehouse test');
+  }
 });
 
 if (passingCount) {
