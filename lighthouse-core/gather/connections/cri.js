@@ -23,6 +23,14 @@ const hostname = 'localhost';
 // const port = process.env.PORT || 9222;
 const log = require('../../lib/log.js');
 
+function delay(time) {
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, time);
+  });
+}
+
+const MAX_COUNT = 5;
+
 class CriConnection extends Connection {
   constructor(port) {
     super();
@@ -36,7 +44,7 @@ class CriConnection extends Connection {
    * @return {!Promise}
    */
   connect() {
-    return this._runJsonCommand('new').then(response => {
+    return this.runJsonCommandWrapper('new').then(response => {
       log.log('CriConnection', '_runJsonCommand returned');
       const url = response.webSocketDebuggerUrl;
       log.log('CriConnection', 'websocket url acquired! ' + url);
@@ -55,6 +63,24 @@ class CriConnection extends Connection {
         });
       });
     });
+  }
+
+  runJsonCommandWrapper(command, count) {
+    count = count || 0;
+
+    log.log('CriConnection', `running _runJsonCommand for time #${count + 1}`);
+    return this._runJsonCommand(command)
+      .catch(_ => {
+        count++;
+        if (count >= MAX_COUNT) {
+          log.log('CriConnection', `ran _runJsonCommand ${count} times. Giving up...`);
+          throw new Error('Failed to establish http get');
+        }
+
+        const pause = Math.pow(5, count) * 2;
+        log.log('CriConnection', `_runJsonCommand Failed. Waiting ${pause}ms and retrying...`);
+        return delay(pause).then(_ => this.runJsonCommandWrapper(command, count));
+      });
   }
 
   /**
