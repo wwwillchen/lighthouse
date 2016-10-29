@@ -200,6 +200,7 @@ const expectations = require(resolveLocalOrCwd(cli['expectations-path']));
 // reporting result.
 let passingCount = 0;
 let failingCount = 0;
+let errorCaughtCount = 0;
 expectations.forEach(expected => {
   console.log(`Checking '${expected.initialUrl}'...`);
   try {
@@ -210,6 +211,7 @@ expectations.forEach(expected => {
     passingCount += counts.passed;
     failingCount += counts.failed;
   } catch (e) {
+    errorCaughtCount++;
     console.log('smokehouse run failed:', e);
     console.log('moving to next smokehouse test');
   }
@@ -220,5 +222,9 @@ if (passingCount) {
 }
 if (failingCount) {
   console.log(redify(`${failingCount} failing`));
+  process.exit(1);
+}
+if (errorCaughtCount > 0) {
+  console.log('some lighthouse tests threw');
   process.exit(1);
 }
