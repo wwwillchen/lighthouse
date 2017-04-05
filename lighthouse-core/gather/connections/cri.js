@@ -64,7 +64,7 @@ class CriConnection extends Connection {
    * @return {!Promise<string>}
    */
   getChromeVersion() {
-    return this._runJsonCommand('version');
+    return this._runJsonCommand('version').then(chromeMetadata => /Chrome\/([0-9.]+)/.exec(chromeMetadata.Browser)[1]);
   }
 
   /**

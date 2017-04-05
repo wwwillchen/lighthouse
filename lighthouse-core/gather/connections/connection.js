@@ -19,6 +19,19 @@
 const EventEmitter = require('events').EventEmitter;
 const log = require('../../lib/log.js');
 
+/**
+ * @interface
+ */
+class ConnectionDelegate {
+  /**
+   * Evaluate an expression in the context of the current page.
+   * Returns a promise that resolves on the expression's value.
+   * @param {string} expression
+   * @return {!Promise<*>}
+   */
+  evaluateAsync(expression) { }
+}
+
 class Connection {
 
   constructor() {
@@ -26,6 +39,7 @@ class Connection {
     /** @type {!Map<number, {resolve: function(*), reject: function(*), method: string}>}*/
     this._callbacks = new Map();
     this._eventEmitter = new EventEmitter();
+    this._delegate = null;
   }
 
   /**
@@ -128,6 +142,13 @@ class Connection {
   dispose() {
     this._eventEmitter.removeAllListeners();
     this._eventEmitter = null;
+  }
+
+  /**
+   * @param {!ConnectionDelegate} delegate
+   */
+  setDelegate(delegate) {
+    this._delegate = delegate;
   }
 
   /**

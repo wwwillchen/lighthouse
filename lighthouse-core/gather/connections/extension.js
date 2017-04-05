@@ -30,13 +30,12 @@ class ExtensionConnection extends Connection {
     this._onEvent = this._onEvent.bind(this);
     this._onUnexpectedDetach = this._onUnexpectedDetach.bind(this);
   }
-    /**
+
+  /**
    * @return {!Promise<string>}
    */
   getChromeVersion() {
-    // navigator.userAgent
-    // return /Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1];
-    return "1";
+    return Promise.resolve(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1]);
   }
 
   _onEvent(source, method, params) {

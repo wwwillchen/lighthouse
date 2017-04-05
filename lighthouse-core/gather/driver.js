@@ -42,6 +42,7 @@ class Driver {
     this._traceCategories = Driver.traceCategories;
     this._eventEmitter = new EventEmitter();
     this._connection = connection;
+    this._connection.setDelegate(this);
     // currently only used by WPT where just Page and Network are needed
     this._devtoolsLog = new DevtoolsLog(/^(Page|Network)\./);
     connection.on('notification', event => {

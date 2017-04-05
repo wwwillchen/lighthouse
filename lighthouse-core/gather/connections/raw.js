@@ -71,6 +71,13 @@ class RawConnection extends Connection {
   sendRawMessage(message) {
     this._port.send(message);
   }
+
+  /**
+   * @return {!Promise<string>}
+   */
+  getChromeVersion() {
+    this._delegate.evaluateAsync(`/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1]`);
+  }
 }
 
 module.exports = RawConnection;
