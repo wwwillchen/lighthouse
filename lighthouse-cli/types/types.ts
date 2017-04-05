@@ -51,6 +51,7 @@ interface Results {
   url: string;
   aggregations: Array<Aggregation>;
   audits: AuditFullResults;
+  chromeVersion: string;
   lighthouseVersion: string;
   artifacts?: Object;
   initialUrl: string;

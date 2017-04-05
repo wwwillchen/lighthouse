@@ -60,6 +60,14 @@ class CriConnection extends Connection {
   }
 
   /**
+   * @override
+   * @return {!Promise<string>}
+   */
+  getChromeVersion() {
+    return this._runJsonCommand('version');
+  }
+
+  /**
    * @param {!Object} response
    * @return {!Promise}
    */

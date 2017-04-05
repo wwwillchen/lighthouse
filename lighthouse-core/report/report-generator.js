@@ -170,6 +170,7 @@ class ReportGenerator {
 
     return template({
       url: results.url,
+      chromeVersion: results.chromeVersion,
       lighthouseVersion: results.lighthouseVersion,
       generatedTime: results.generatedTime,
       lhresults: this._escapeScriptTags(JSON.stringify(results, null, 2)),

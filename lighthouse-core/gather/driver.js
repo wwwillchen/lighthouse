@@ -80,6 +80,13 @@ class Driver {
   }
 
   /**
+   * @return {Promise<string>}
+   */
+  getChromeVersion() {
+    return this._connection.getChromeVersion();
+  }
+
+  /**
    * @return {!Promise<null>}
    */
   connect() {

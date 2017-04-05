@@ -129,6 +129,14 @@ class Connection {
     this._eventEmitter.removeAllListeners();
     this._eventEmitter = null;
   }
+
+  /**
+   * @return {!Promise<string>}
+   */
+  getChromeVersion() {
+    return Promise.reject(new Error('Not implemented'));
+  }
+
 }
 
 module.exports = Connection;

@@ -144,7 +144,8 @@ class Runner {
           score = report.score;
         }
 
-        return {
+        return opts.driver.getChromeVersion().then(version => ({
+          chromeVersion: version,
           lighthouseVersion: require('../package').version,
           generatedTime: (new Date()).toJSON(),
           initialUrl: opts.initialUrl,
@@ -155,7 +156,7 @@ class Runner {
           score,
           reportCategories,
           aggregations
-        };
+        }));
       });
 
     return run;
