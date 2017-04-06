@@ -91,7 +91,7 @@ class GatherRunner {
       }));
   }
 
-  static setupDriver(driver, options) {
+  static setupDriver(driver, gathererResults, options) {
     log.log('status', 'Initializing…');
     const resetStorage = !options.flags.disableStorageReset;
     // Enable emulation based on flags
@@ -101,7 +101,8 @@ class GatherRunner {
       .then(_ => driver.cacheNatives())
       .then(_ => resetStorage && driver.cleanAndDisableBrowserCaches())
       .then(_ => resetStorage && driver.clearDataForOrigin(options.url))
-      .then(_ => driver.blockUrlPatterns(options.flags.blockedUrlPatterns || []));
+      .then(_ => driver.blockUrlPatterns(options.flags.blockedUrlPatterns || []))
+      .then(_ => gathererResults.userAgent = [driver.getUserAgent()]);
   }
 
   static disposeDriver(driver) {
@@ -326,7 +327,7 @@ class GatherRunner {
 
     return driver.connect()
       .then(_ => GatherRunner.loadBlank(driver))
-      .then(_ => GatherRunner.setupDriver(driver, options))
+      .then(_ => GatherRunner.setupDriver(driver, gathererResults, options))
 
       // Run each pass
       .then(_ => {
