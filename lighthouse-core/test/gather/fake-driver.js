@@ -20,7 +20,7 @@ const recordsFromLogs = require('../../lib/network-recorder').recordsFromLogs;
 
 module.exports = {
   getUserAgent() {
-    return Promise.resolve("Fake user agent");
+    return Promise.resolve('Fake user agent');
   },
   connect() {
     return Promise.resolve();

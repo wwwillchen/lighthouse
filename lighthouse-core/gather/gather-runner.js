@@ -91,6 +91,12 @@ class GatherRunner {
       }));
   }
 
+  /**
+   * @param {!Driver} driver
+   * @param {!Object} gathererResults
+   * @param {!Object} options
+   * @return {!Promise}
+   */
   static setupDriver(driver, gathererResults, options) {
     log.log('status', 'Initializing…');
     const resetStorage = !options.flags.disableStorageReset;
