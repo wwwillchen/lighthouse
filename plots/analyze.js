@@ -86,7 +86,7 @@ function readResult(lighthouseReportPath) {
 }
 
 /**
- * Aggregates sites results by performance metric because it's
+ * Aggregates site results by performance metric because it's
  * informative to compare a suite of sites for a particular metric.
  * @param {!Array<!SiteResults>} results
  * @return {!ResultsByMetric}
