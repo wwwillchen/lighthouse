@@ -22,6 +22,11 @@ const path = require('path');
 const URL = require('../lib/url-shim');
 
 /**
+ * @typedef {!Object<string, !Array<!Promise<*>>>}
+ */
+let GathererResults; // eslint-disable-line no-unused-vars
+
+/**
  * Class that drives browser to load the page and runs gatherer lifecycle hooks.
  * Execution sequence when GatherRunner.run() is called:
  *
@@ -93,7 +98,7 @@ class GatherRunner {
 
   /**
    * @param {!Driver} driver
-   * @param {!Object} gathererResults
+   * @param {!GathererResults} gathererResults
    * @param {!Object} options
    * @return {!Promise}
    */
@@ -108,7 +113,7 @@ class GatherRunner {
       .then(_ => resetStorage && driver.cleanAndDisableBrowserCaches())
       .then(_ => resetStorage && driver.clearDataForOrigin(options.url))
       .then(_ => driver.blockUrlPatterns(options.flags.blockedUrlPatterns || []))
-      .then(_ => gathererResults.userAgent = [driver.getUserAgent()]);
+      .then(_ => gathererResults.UserAgent = [driver.getUserAgent()]);
   }
 
   static disposeDriver(driver) {
@@ -162,7 +167,7 @@ class GatherRunner {
    * Navigates to about:blank and calls beforePass() on gatherers before tracing
    * has started and before navigation to the target page.
    * @param {!Object} options
-   * @param {!Object<!Array<!Promise<*>>} gathererResults
+   * @param {!GathererResults} gathererResults
    * @return {!Promise}
    */
   static beforePass(options, gathererResults) {
@@ -183,7 +188,7 @@ class GatherRunner {
    * Navigates to requested URL and then runs pass() on gatherers while trace
    * (if requested) is still being recorded.
    * @param {!Object} options
-   * @param {!Object<!Array<!Promise<*>>} gathererResults
+   * @param {!GathererResults} gathererResults
    * @return {!Promise}
    */
   static pass(options, gathererResults) {
@@ -213,7 +218,7 @@ class GatherRunner {
    * afterPass() on gatherers with trace data passed in. Promise resolves with
    * object containing trace and network data.
    * @param {!Object} options
-   * @param {!Object<!Array<!Promise<*>>} gathererResults
+   * @param {!GathererResults} gathererResults
    * @return {!Promise}
    */
   static afterPass(options, gathererResults) {
@@ -275,7 +280,7 @@ class GatherRunner {
    * last produced value (that's not undefined) as the artifact for that
    * gatherer. If a non-fatal error was rejected from a gatherer phase,
    * uses that error object as the artifact instead.
-   * @param {!Object<!Array<!Promise<*>>} gathererResults
+   * @param {!GathererResults} gathererResults
    * @return {!Promise<!Artifacts>}
    */
   static collectArtifacts(gathererResults) {

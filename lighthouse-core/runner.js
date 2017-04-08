@@ -145,7 +145,7 @@ class Runner {
         }
 
         return {
-          userAgent: runResults.artifacts.userAgent,
+          userAgent: runResults.artifacts.UserAgent,
           lighthouseVersion: require('../package').version,
           generatedTime: (new Date()).toJSON(),
           initialUrl: opts.initialUrl,

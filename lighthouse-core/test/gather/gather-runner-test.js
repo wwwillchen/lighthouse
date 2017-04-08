@@ -128,7 +128,7 @@ describe('GatherRunner', function() {
     const options = {url, driver, config};
 
     return GatherRunner.run([], options).then(results => {
-      assert.equal(results.userAgent, 'Fake user agent', 'did not find expected user agent string');
+      assert.equal(results.UserAgent, 'Fake user agent', 'did not find expected user agent string');
     });
   });
 
