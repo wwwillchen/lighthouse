@@ -130,18 +130,7 @@ function main() {
     return;
   }
 
-  const launcher = new ChromeLauncher();
-  launcher
-    .isDebuggerReady()
-    .catch(() => launcher.run())
-    .then(() => runAnalysis())
-    .then(() => launcher.kill())
-    .catch(err => launcher.kill().then(
-      () => {
-        throw err;
-      },
-      console.error // eslint-disable-line no-console
-    ));
+  runAnalysis();
 }
 
 main();
@@ -163,7 +152,20 @@ function runAnalysis() {
     const id = i.toString();
     const isFirstRun = i === 0;
     for (const url of URLS) {
-      promise = promise.then(() => singleRunAnalysis(url, id, {ignoreRun: isFirstRun}));
+      promise = promise.then(() => {
+        const launcher = new ChromeLauncher();
+        return launcher
+          .isDebuggerReady()
+          .catch(() => launcher.run())
+          .then(() => singleRunAnalysis(url, id, {ignoreRun: isFirstRun}))
+          .then(() => launcher.kill())
+          .catch(err => launcher.kill().then(
+            () => {
+              throw err;
+            },
+            console.error // eslint-disable-line no-console
+          ));
+      });
     }
   }
   return promise;
