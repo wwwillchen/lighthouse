@@ -242,11 +242,10 @@ function createHeaderLabelElement(screenshot) {
 function createScreenshotImageElement(screenshot) {
   const image = createElement('img', 'screenshot-image');
   image.src = screenshot.datauri;
-  image.addEventListener(
-    'mouseover',
-    onImageMouseover.bind(null, imagePopoverElement, screenshot)
-  );
-  image.addEventListener('mouseout', () => { removeChildren(imagePopoverElement); });
+  image.addEventListener('mouseover', onImageMouseover.bind(null, imagePopoverElement, screenshot));
+  image.addEventListener('mouseout', () => {
+    removeChildren(imagePopoverElement);
+  });
   return image;
 }
 

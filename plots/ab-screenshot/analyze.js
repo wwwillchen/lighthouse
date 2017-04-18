@@ -152,7 +152,10 @@ function analyzeSingleRunScreenshots(sitePath) {
  * @return {!Array<string>}
  */
 function sortRunFolders(folders) {
-  return folders.map(folder => Number(folder)).sort((a, b) => a - b).map(folder => folder.toString());
+  return folders
+    .map(folder => Number(folder))
+    .sort((a, b) => a - b)
+    .map(folder => folder.toString());
 }
 
 /**
