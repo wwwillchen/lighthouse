@@ -19,7 +19,9 @@
 /* global Plotly, generatedResults */
 /* eslint-env browser */
 
-const IGNORED_METRICS = ['Navigation Start'];
+const IGNORED_METRICS = new Set(['Navigation Start']);
+
+const metrics = Object.keys(generatedResults).filter(metric => !IGNORED_METRICS.has(metric));
 
 let elementId = 1;
 
@@ -54,26 +56,22 @@ function createChartElement(height = 800) {
 }
 
 function generateStackedBarChart() {
-  for (let i = 0; i < generatedResults["First Contentful Paint"].length; i++) {
-    const data = [
-      "First Contentful Paint",
-      "First Meaningful Paint",
-      "First Visual Change",
-      "Visually Complete 85%",
-      "Visually Complete 100%",
-      "On Load",
-      "Time to Interactive (vAlpha)",
-      "Time to Interactive (vAlpha non-visual)",
-      "Time to Interactive (vAlpha non-visual, 5s)",
-      "End of Trace",
-    ].map(metric => ({
-      y: generatedResults[metric][i].metrics.map(m => m.timing),
+  const sitesCount = metrics.reduce((acc, metric) => Math.max(acc, generatedResults[metric].length), 0);
+  for (let i = 0; i < sitesCount; i++) {
+    const data = metrics.map(metric => ({
+      y: generatedResults[metric][i].metrics.map(m => m ? m.timing : null),
       name: metric,
-      type: "bar"
+      type: "bar",
     }));
 
-    var layout = { barmode: "group", title: generatedResults["First Contentful Paint"][i].site};
-    Plotly.newPlot(createChartElement(), data, layout);
+    var layout = {
+      yaxis: {
+        rangemode: 'tozero'
+      },
+      hovermode:'closest',
+      barmode: "group", title: generatedResults[metrics[0]][i].site
+    };
+    window.P = Plotly.newPlot(createChartElement(), data, layout);
   }
 }
 
