@@ -30,6 +30,7 @@ let elementId = 1;
  * because it's generating so many charts.
  */
 const queuedPlots = [];
+
 function enqueuePlot(fn) {
   const isFirst = queuedPlots.length == 0;
   queuedPlots.push(fn);
@@ -37,6 +38,7 @@ function enqueuePlot(fn) {
     renderPlots();
   }
 }
+
 function renderPlots() {
   window.requestAnimationFrame(_ => {
     const plotFn = queuedPlots.shift();
@@ -55,7 +57,7 @@ function createChartElement(height = 800) {
   return div.id;
 }
 
-function generateStackedBarChart() {
+function generateGroupedBarChart() {
   const sitesCount = metrics.reduce(
     (acc, metric) => Math.max(acc, generatedResults[metric].length),
     0
@@ -81,4 +83,4 @@ function generateStackedBarChart() {
   }
 }
 
-generateStackedBarChart();
+generateGroupedBarChart();
