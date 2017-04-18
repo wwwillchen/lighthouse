@@ -58,7 +58,7 @@ function main() {
     outFilePath,
     `var aggregatedScreenshots = ${JSON.stringify(aggregatedScreenshots, undefined, 2)}`
   );
-  console.log('Wrote output to:', outFilePath);
+  console.log('Wrote output to:', outFilePath); // eslint-disable-line no-console
 }
 
 main();
@@ -166,7 +166,7 @@ function sortRunFolders(folders) {
  */
 function markScreenshots(results, key, timing) {
   let hasSeenKeyTiming = false;
-  for (let screenshot of results.screenshots) {
+  for (const screenshot of results.screenshots) {
     if (!hasSeenKeyTiming && screenshot.timing > timing) {
       hasSeenKeyTiming = true;
       screenshot[key] = true;

@@ -24,7 +24,6 @@ const utils = require('./utils');
 const Metrics = require('../lighthouse-core/lib/traces/pwmetrics-events');
 
 const GENERATED_RESULTS_PATH = path.resolve(constants.OUT_PATH, 'generatedResults.js');
-const LIGHTHOUSE_REPORT_FILENAME = 'lighthouse.json';
 
 /**
  * Analyzes output generated from the measure step and
