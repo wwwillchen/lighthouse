@@ -57,11 +57,11 @@ function analyzeSite(sitePath) {
   console.log('Analyzing', sitePath); // eslint-disable-line no-console
   const runResults = [];
   fs.readdirSync(sitePath).forEach(runDir => {
-    const lighthouseReportPath = path.resolve(sitePath, runDir, LIGHTHOUSE_REPORT_FILENAME);
-    if (!utils.isFile(lighthouseReportPath)) {
+    const resultsPath = path.resolve(sitePath, runDir, constants.LIGHTHOUSE_REPORT_FILENAME);
+    if (!utils.isFile(resultsPath)) {
       return;
     }
-    const metrics = readResult(lighthouseReportPath);
+    const metrics = readResult(resultsPath);
     console.log(`Metric for ${runDir}: ${JSON.stringify(metrics)}`); // eslint-disable-line no-console
     runResults[runDir] = {
       runId: runDir,

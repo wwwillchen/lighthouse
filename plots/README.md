@@ -9,7 +9,7 @@ https://github.com/GoogleChrome/lighthouse/issues/1924
 
 You need to build lighthouse first.
 
-### Commands
+### Generating & viewing charts
 
 ```
 # View all commands
