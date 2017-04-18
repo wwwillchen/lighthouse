@@ -56,23 +56,29 @@ function createChartElement(height = 800) {
 }
 
 function generateStackedBarChart() {
-  const sitesCount = metrics.reduce((acc, metric) => Math.max(acc, generatedResults[metric].length), 0);
+  const sitesCount = metrics.reduce(
+    (acc, metric) => Math.max(acc, generatedResults[metric].length),
+    0
+  );
   for (let i = 0; i < sitesCount; i++) {
     const data = metrics.map(metric => ({
       y: generatedResults[metric][i].metrics.map(m => m ? m.timing : null),
       name: metric,
-      type: "bar",
+      type: 'bar'
     }));
 
-    var layout = {
+    const layout = {
       yaxis: {
         rangemode: 'tozero'
       },
-      hovermode:'closest',
-      barmode: "group", title: generatedResults[metrics[0]][i].site
+      hovermode: 'closest',
+      barmode: 'group',
+      title: generatedResults[metrics[0]][i].site
     };
-    window.P = Plotly.newPlot(createChartElement(), data, layout);
+    enqueuePlot(_ => {
+      Plotly.newPlot(createChartElement(), data, layout);
+    });
   }
 }
 
-generateStackedBarChart()
+generateStackedBarChart();
