@@ -142,6 +142,11 @@ h1 {
   color: white;
 }
 
+.screenshot-header-label.is-vc85 {
+  background: lightgreen;
+  color: black;
+}
+
 .screenshot-header-label.is-vc100 {
   background: green;
   color: white;

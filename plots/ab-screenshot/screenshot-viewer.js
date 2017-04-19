@@ -228,6 +228,10 @@ function createHeaderLabelElement(screenshot) {
     headerLabelElement.classList.add('is-fmp');
     headerLabelElement.appendChild(createText('fmp '));
   }
+  if (screenshot.isVC85) {
+    headerLabelElement.classList.add('is-vc85');
+    headerLabelElement.appendChild(createText('vc85 '));
+  }
   if (screenshot.isVC100) {
     headerLabelElement.classList.add('is-vc100');
     headerLabelElement.appendChild(createText('vc100 '));

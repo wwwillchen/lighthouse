@@ -79,15 +79,14 @@ describe('asset-saver helper', () => {
       const ssFileContents = fs.readFileSync(ssHTMLFilename, 'utf8');
       assert.ok(/<!doctype/gim.test(ssFileContents));
       const expectedScreenshotContent = '{"timestamp":674089419.919';
-      assert.ok(ssFileContents.includes(expectedScreenshotContent), , 'unexpected screenshot html');
+      assert.ok(ssFileContents.includes(expectedScreenshotContent), 'unexpected screenshot html');
       fs.unlinkSync(ssHTMLFilename);
     });
 
     it('screenshots json file saved to disk with data', () => {
       const ssJSONFilename = 'the_file-0.screenshots.json';
-      const ssFileContents = fs.readFileSync(ssJSONFilename, 'utf8');
-      const expectedScreenshotContent = '"timestamp": 674089419.919,';
-      assert.ok(ssFileContents.includes(expectedScreenshotContent), 'unexpected screenshot json');
+      const ssContents = JSON.parse(fs.readFileSync(ssJSONFilename, 'utf8'));
+      assert.equal(ssContents[0].timestamp, 674089419.919, 'unexpected screenshot json');
       fs.unlinkSync(ssJSONFilename);
     });
   });

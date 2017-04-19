@@ -105,6 +105,7 @@ function analyzeSingleRunScreenshots(sitePath) {
 
   const fcpTiming = getTiming('ttfcp');
   const fmpTiming = getTiming('ttfmp');
+  const vc85Timing = getTiming('vc85');
   const vc100Timing = getTiming('vc100');
 
   const navStartTimestamp = getTimestamp('navstart');
@@ -122,6 +123,7 @@ function analyzeSingleRunScreenshots(sitePath) {
 
   markScreenshots(results, 'isFCP', fcpTiming);
   markScreenshots(results, 'isFMP', fmpTiming);
+  markScreenshots(results, 'isVC85', vc85Timing);
   markScreenshots(results, 'isVC100', vc100Timing);
 
   return results;
@@ -205,6 +207,7 @@ let SingleRunScreenshots; // eslint-disable-line no-unused-vars
  *   timing: number,
  *   isFCP: boolean,
  *   isFMP: boolean,
+ *   isVC85: boolean,
  *   isVC100: boolean
  * }}
  */
