@@ -19,6 +19,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const opn = require('opn');
+
 const constants = require('./constants');
 const utils = require('./utils');
 const Metrics = require('../lighthouse-core/lib/traces/pwmetrics-events');
@@ -43,6 +45,8 @@ function main() {
     GENERATED_RESULTS_PATH,
     `var generatedResults = ${JSON.stringify(generatedResults)}`
   );
+  console.log('Opening the charts web page...');  // eslint-disable-line no-console
+  opn(path.resolve(__dirname, 'index.html'));
 }
 
 main();
@@ -56,7 +60,7 @@ function analyzeSite(sitePath) {
   console.log('Analyzing', sitePath); // eslint-disable-line no-console
   const runResults = [];
   fs.readdirSync(sitePath).forEach(runDir => {
-    const resultsPath = path.resolve(sitePath, runDir, constants.LIGHTHOUSE_REPORT_FILENAME);
+    const resultsPath = path.resolve(sitePath, runDir, constants.LIGHTHOUSE_RESULTS_FILENAME);
     if (!utils.isFile(resultsPath)) {
       return;
     }

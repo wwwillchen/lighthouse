@@ -20,8 +20,9 @@ $ node measure.js
 $ cd ab-screenshot
 
 # Analyze the screenshot data to generate a summary file
+# This will launch the screenshot viewer in the browser
 $ node analyze.js -a ../out-first -b ../out-second
 
-# Use the screenshot viewer
+# If you need to open the screenshot viewer later
 $ node open.js
 ```
