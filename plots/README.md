@@ -20,8 +20,9 @@ $ npm run
 $ npm run measure
 
 # Analyze the data to generate a summary file (i.e. out/generatedResults.js)
+# This will launch the charts web page in the browser
 $ npm run analyze
 
-# View visualization
+# If you need to view the charts later
 $ npm run open
 ```
