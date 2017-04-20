@@ -23,5 +23,5 @@ $ npm run measure
 $ npm run analyze
 
 # View visualization
-# Open index.html in browser
+$ npm run open
 ```

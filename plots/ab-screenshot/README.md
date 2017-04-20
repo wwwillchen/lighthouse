@@ -7,20 +7,21 @@ This tools enables you to look at how two different versions of perf metrics mea
 ```
 # 1. Run measure two times (e.g two different versions of lighthouse)
 
-# in /plots/
+# In /plots/
 $ node measure.js
 
-# save the first results into another directory
+# Save the first results into another directory
 $ mv ./out ./out-first
 
 # (e.g. switch versions of lighthouse, modify algorithm)
 $ node measure.js
 
-# Analyze the screenshot data to generate a summary file
+# Switch to /plots/ab-screenshot
+$ cd ab-screenshot
 
-# in /plots/ab-screenshot
+# Analyze the screenshot data to generate a summary file
 $ node analyze.js -a ../out-first -b ../out-second
 
 # Use the screenshot viewer
-# Open index.html in browser
+$ node open.js
 ```
