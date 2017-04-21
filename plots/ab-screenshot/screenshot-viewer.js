@@ -21,8 +21,10 @@
 
 const queuedRendering = [];
 const imagePopoverElement = document.getElementById('image-popover');
+const imagePopoverImageElement = imagePopoverElement.querySelector('img');
 const rootElement = document.getElementById('container');
 let isAlignTimelineEnabled = true;
+let shouldHidePopover = true;
 
 /**
  * Incrementally renders the sites, otherwise it hangs the browser
@@ -51,6 +53,7 @@ function renderFromQueue() {
  * Renders the A/B screenshot comparison content generated from analyze.js.
  */
 function main() {
+  registerHotkeys();
   renderLegend(aggregatedScreenshots.a, aggregatedScreenshots.b);
   renderScreenshots(aggregatedScreenshots.data);
   document.getElementById('align-control').addEventListener('click', onToggleAlign);
@@ -78,6 +81,44 @@ function renderScreenshots(comparisons) {
     enqueueRendering(() => {
       rootElement.appendChild(createSiteElement(comparison));
     }));
+}
+
+/**
+ * Animates the horizontal scroll position
+ * @param {number} scrollDistancePx
+ */
+function scrollPageHorizontally(scrollDistancePx, durationMs = 350) {
+  // thank you, paul lewis. <3z
+  const ease = (v, pow=3) => 1 - Math.pow(1 - v, pow);
+
+  const start = Date.now();
+  const end = start + durationMs;
+  let lastChangePx = 0;
+
+  scroll();
+
+  function scroll() {
+    const now = Date.now();
+    if (now >= end) return;
+
+    const pctDone = (now - start) / durationMs;
+    const pxToGo = ease(pctDone) * scrollDistancePx;
+    window.scrollBy(pxToGo - lastChangePx, 0);
+    lastChangePx = pxToGo;
+    window.requestAnimationFrame(scroll);
+  }
+}
+
+/**
+ * Binds global keyboard event handlers for panning the view with A & D keys.
+ */
+function registerHotkeys() {
+  document.addEventListener('keydown', event => {
+    // move to the left
+    if (event.code === 'KeyA') scrollPageHorizontally(-350);
+    // move to the right
+    if (event.code === 'KeyD') scrollPageHorizontally(350);
+  }, {passive: true});
 }
 
 /**
@@ -246,9 +287,14 @@ function createHeaderLabelElement(screenshot) {
 function createScreenshotImageElement(screenshot) {
   const image = createElement('img', 'screenshot-image');
   image.src = screenshot.datauri;
-  image.addEventListener('mouseover', onImageMouseover.bind(null, imagePopoverElement, screenshot));
-  image.addEventListener('mouseout', () => {
-    removeChildren(imagePopoverElement);
+  image.addEventListener('mouseenter', event =>
+    onImageMouseover(imagePopoverElement, screenshot, event));
+  image.addEventListener('mouseleave', () => {
+    shouldHidePopover = true;
+    setTimeout(_ => {
+      if (shouldHidePopover)
+        imagePopoverElement.classList.add('hidden');
+    }, 200);
   });
   return image;
 }
@@ -260,11 +306,12 @@ function createScreenshotImageElement(screenshot) {
  * @param {!Event} event
  */
 function onImageMouseover(imagePopoverElement, screenshot, event) {
-  const image = createElement('img');
-  image.src = screenshot.datauri;
-  imagePopoverElement.appendChild(image);
-  imagePopoverElement.style.top = event.clientY + 20 + 'px';
-  imagePopoverElement.style.left = event.clientX + 20 + 'px';
+  shouldHidePopover = false;
+  imagePopoverImageElement.src = screenshot.datauri;
+  imagePopoverElement.classList.remove('hidden');
+  const pos = event.currentTarget.getBoundingClientRect();
+  imagePopoverElement.style.top = pos.bottom + 2 + 'px';
+  imagePopoverElement.style.left = pos.left + 20 + 'px';
 }
 
 /**
