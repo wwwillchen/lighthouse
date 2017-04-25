@@ -101,7 +101,7 @@ function aggregate(outPathA, outPathB) {
  * @return {!SingleRunScreenshots}
  */
 function analyzeSingleRunScreenshots(sitePath) {
-  const runDir = sortRunFolders(fs.readdirSync(sitePath))[0];
+  const runDir = sortAndFilterRunFolders(fs.readdirSync(sitePath))[0];
   const runPath = path.resolve(sitePath, runDir);
   const lighthouseResultsPath = path.resolve(runPath, constants.LIGHTHOUSE_RESULTS_FILENAME);
   const lighthouseResults = JSON.parse(fs.readFileSync(lighthouseResultsPath));
@@ -156,8 +156,9 @@ function analyzeSingleRunScreenshots(sitePath) {
  * @param {!Array<string>} folders
  * @return {!Array<string>}
  */
-function sortRunFolders(folders) {
+function sortAndFilterRunFolders(folders) {
   return folders
+    .filter(folder => folder !== '.DS_Store')
     .map(folder => Number(folder))
     .sort((a, b) => a - b)
     .map(folder => folder.toString());
