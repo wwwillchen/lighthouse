@@ -100,6 +100,7 @@ body {
 
 #image-popover {
   position: fixed;
+  outline: 1px solid black;
 }
 
 #image-popover img {
@@ -167,4 +168,8 @@ h1 {
 
 .run-container {
   margin-bottom: 10px;
+}
+
+.hidden {
+  visibility: hidden;
 }
