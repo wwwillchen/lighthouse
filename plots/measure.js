@@ -20,6 +20,7 @@ const path = require('path');
 const parseURL = require('url').parse;
 
 const mkdirp = require('mkdirp');
+const args = require('yargs').argv;
 
 const constants = require('./constants.js');
 const utils = require('./utils.js');
@@ -29,9 +30,21 @@ const ChromeLauncher = require('../lighthouse-cli/chrome-launcher.js').ChromeLau
 const Printer = require('../lighthouse-cli/printer');
 const assetSaver = require('../lighthouse-core/lib/asset-saver.js');
 
-const NUMBER_OF_RUNS = 20;
+const DISABLE_DEVICE_EMULATION = args['disable-device-emulation'];
+const DISABLE_CPU_THROTTLING = args['disable-cpu-throttling'] ;
+const DISABLE_NETWORK_THROTTLING = args['disable-network-throttling'] ;
+const KEEP_FIRST_RUN = args['keep-first-run'];
+const NUMBER_OF_RUNS = args.n || 20;
 
-const URLS = [
+const FLAGS = {
+  output: 'json',
+  disableCpuThrottling: DISABLE_CPU_THROTTLING,
+  disableNetworkThrottling: DISABLE_NETWORK_THROTTLING,
+  disableDeviceEmulation: DISABLE_DEVICE_EMULATION,
+};
+console.log('Running lighthouse with flags: ', FLAGS);
+
+const URLS = args.site ? [args.site] : [
   // Flagship sites
   'https://nytimes.com',
   'https://flipkart.com',
@@ -162,8 +175,9 @@ function runAnalysis() {
 
     const id = i.toString();
     const isFirstRun = i === 0;
+    const ignoreRun = KEEP_FIRST_RUN ? false : isFirstRun;
     for (const url of URLS) {
-      promise = promise.then(() => singleRunAnalysis(url, id, {ignoreRun: isFirstRun}));
+      promise = promise.then(() => singleRunAnalysis(url, id, {ignoreRun}));
     }
   }
   return promise;
@@ -199,8 +213,7 @@ function singleRunAnalysis(url, id, {ignoreRun}) {
  * @return {!Promise}
  */
 function analyzeWithLighthouse(url, outputPath, assetsPath, {ignoreRun}) {
-  const flags = {output: 'json'};
-  return lighthouse(url, flags, config)
+  return lighthouse(url, FLAGS, config)
     .then(lighthouseResults => {
       if (ignoreRun) {
         return;
@@ -209,7 +222,7 @@ function analyzeWithLighthouse(url, outputPath, assetsPath, {ignoreRun}) {
         .saveAssets(lighthouseResults.artifacts, lighthouseResults.audits, assetsPath)
         .then(() => {
           lighthouseResults.artifacts = undefined;
-          return Printer.write(lighthouseResults, flags.output, outputPath);
+          return Printer.write(lighthouseResults, FLAGS.output, outputPath);
         });
     })
     .catch(err => console.error(err)); // eslint-disable-line no-console
