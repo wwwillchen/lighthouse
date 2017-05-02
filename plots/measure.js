@@ -50,7 +50,6 @@ const URLS = args.site ? [args.site] : [
   'https://flipkart.com',
   'http://www.espn.com/',
   'https://www.washingtonpost.com/pwa/',
-  'https://www.airbnb.com/',
 
   // TTI Tester sites
   // 'https://housing.com/in/buy/real-estate-hyderabad',
