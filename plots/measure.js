@@ -31,8 +31,8 @@ const Printer = require('../lighthouse-cli/printer');
 const assetSaver = require('../lighthouse-core/lib/asset-saver.js');
 
 const DISABLE_DEVICE_EMULATION = args['disable-device-emulation'];
-const DISABLE_CPU_THROTTLING = args['disable-cpu-throttling'] ;
-const DISABLE_NETWORK_THROTTLING = args['disable-network-throttling'] ;
+const DISABLE_CPU_THROTTLING = args['disable-cpu-throttling'];
+const DISABLE_NETWORK_THROTTLING = args['disable-network-throttling'];
 const KEEP_FIRST_RUN = args['keep-first-run'];
 const NUMBER_OF_RUNS = args.n || 20;
 
@@ -50,84 +50,85 @@ const URLS = args.site ? [args.site] : [
   'https://flipkart.com',
   'http://www.espn.com/',
   'https://www.washingtonpost.com/pwa/',
+  'https://www.airbnb.com/',
 
   // TTI Tester sites
-  'https://housing.com/in/buy/real-estate-hyderabad',
-  'http://www.npr.org/',
-  'http://www.vevo.com/',
-  'https://weather.com/',
+  // 'https://housing.com/in/buy/real-estate-hyderabad',
+  // 'http://www.npr.org/',
+  // 'http://www.vevo.com/',
+  // 'https://weather.com/',
   'https://www.nasa.gov/',
-  'https://vine.co/',
+  // 'https://vine.co/',
   'http://www.booking.com/',
-  'http://www.thestar.com.my',
-  'http://www.58pic.com',
-  'http://www.dawn.com/',
-  'https://www.ebs.in/IPS/',
+  // 'http://www.thestar.com.my',
+  // 'http://www.58pic.com',
+  // 'http://www.dawn.com/',
+  // 'https://www.ebs.in/IPS/',
 
-  // Sourced from: https://en.wikipedia.org/wiki/List_of_most_popular_websites
-  // (http://www.alexa.com/topsites)
-  // Removed adult websites and duplicates (e.g. google int'l websites)
-  // Also removed sites that don't have significant index pages:
-  // "t.co", "popads.net", "onclickads.net", "microsoftonline.com", "onclckds.com", "cnzz.com",
-  // "live.com", "adf.ly", "googleusercontent.com",
+  // // Sourced from: https://en.wikipedia.org/wiki/List_of_most_popular_websites
+  // // (http://www.alexa.com/topsites)
+  // // Removed adult websites and duplicates (e.g. google int'l websites)
+  // // Also removed sites that don't have significant index pages:
+  // // "t.co", "popads.net", "onclickads.net", "microsoftonline.com", "onclckds.com", "cnzz.com",
+  // // "live.com", "adf.ly", "googleusercontent.com",
 
-  'https://google.com',
+  'https://www.google.com/search?q=flowers',
   'https://youtube.com',
-  'https://facebook.com',
-  'https://baidu.com',
-  'https://wikipedia.org',
-  'https://yahoo.com',
+  // 'https://facebook.com',
+  // 'https://baidu.com',
+  'https://en.wikipedia.org/wiki/Google',
+  // 'https://yahoo.com',
   'https://amazon.com',
-  'http://www.qq.com/',
-  'https://taobao.com',
-  'https://vk.com',
-  'https://twitter.com',
-  'https://instagram.com',
-  'http://www.hao123.cn/',
-  'http://www.sohu.com/',
-  'https://sina.com.cn',
+  // 'http://www.qq.com/',
+  // 'https://taobao.com',
+  // 'https://vk.com',
+  'https://mobile.twitter.com/ChromeDevTools',
+  'https://www.instagram.com/stephencurry30',
+  // 'http://www.hao123.cn/',
+  // 'http://www.sohu.com/',
+  // 'https://sina.com.cn',
   'https://reddit.com',
-  'https://linkedin.com',
-  'https://tmall.com',
-  'https://weibo.com',
-  'https://360.cn',
-  'https://yandex.ru',
+  // 'https://linkedin.com',
+  // 'https://tmall.com',
+  // 'https://weibo.com',
+  // 'https://360.cn',
+  // 'https://yandex.ru',
   'https://ebay.com',
-  'https://bing.com',
-  'https://msn.com',
-  'https://www.sogou.com/',
-  'https://wordpress.com',
-  'https://microsoft.com',
-  'https://tumblr.com',
-  'https://aliexpress.com',
-  'https://blogspot.com',
-  'https://netflix.com',
-  'https://ok.ru',
+  // 'https://bing.com',
+  // 'https://msn.com',
+  // 'https://www.sogou.com/',
+  // 'https://wordpress.com',
+  // 'https://microsoft.com',
+  // 'https://tumblr.com',
+  // 'https://aliexpress.com',
+  // 'https://blogspot.com',
+  // 'https://netflix.com',
+  // 'https://ok.ru',
   'https://stackoverflow.com',
-  'https://imgur.com',
+  // 'https://imgur.com',
   'https://apple.com',
-  'http://www.naver.com/',
-  'https://mail.ru',
-  'http://www.imdb.com/',
-  'https://office.com',
-  'https://github.com',
-  'https://pinterest.com',
-  'https://paypal.com',
-  'http://www.tianya.cn/',
-  'https://diply.com',
-  'https://twitch.tv',
-  'https://adobe.com',
-  'https://wikia.com',
-  'https://coccoc.com',
-  'https://so.com',
-  'https://fc2.com',
-  'https://www.pixnet.net/',
-  'https://dropbox.com',
-  'https://zhihu.com',
-  'https://whatsapp.com',
-  'https://alibaba.com',
-  'https://ask.com',
-  'https://bbc.com'
+  // 'http://www.naver.com/',
+  // 'https://mail.ru',
+  // 'http://www.imdb.com/',
+  // 'https://office.com',
+  // 'https://github.com',
+  // 'https://pinterest.com',
+  // 'https://paypal.com',
+  // 'http://www.tianya.cn/',
+  // 'https://diply.com',
+  // 'https://twitch.tv',
+  // 'https://adobe.com',
+  // 'https://wikia.com',
+  // 'https://coccoc.com',
+  // 'https://so.com',
+  // 'https://fc2.com',
+  // 'https://www.pixnet.net/',
+  // 'https://dropbox.com',
+  // 'https://zhihu.com',
+  // 'https://whatsapp.com',
+  // 'https://alibaba.com',
+  // 'https://ask.com',
+  // 'https://bbc.com'
 ];
 
 /**
@@ -143,18 +144,7 @@ function main() {
     return;
   }
 
-  const launcher = new ChromeLauncher();
-  launcher
-    .isDebuggerReady()
-    .catch(() => launcher.run())
-    .then(() => runAnalysis())
-    .then(() => launcher.kill())
-    .catch(err => launcher.kill().then(
-      () => {
-        throw err;
-      },
-      console.error // eslint-disable-line no-console
-    ));
+  runAnalysisWithNewChromeInstances()
 }
 
 main();
@@ -163,7 +153,7 @@ main();
  * Returns a promise chain that analyzes all the sites n times.
  * @return {!Promise}
  */
-function runAnalysis() {
+function runAnalysisWithNewChromeInstances() {
   let promise = Promise.resolve();
 
   // Running it n + 1 times because the first run is deliberately ignored
@@ -177,7 +167,19 @@ function runAnalysis() {
     const isFirstRun = i === 0;
     const ignoreRun = KEEP_FIRST_RUN ? false : isFirstRun;
     for (const url of URLS) {
-      promise = promise.then(() => singleRunAnalysis(url, id, {ignoreRun}));
+      promise = promise.then(() => {
+        const launcher = new ChromeLauncher();
+        return launcher.isDebuggerReady()
+          .catch(() => launcher.run())
+          .then(() => singleRunAnalysis(url, id, { ignoreRun }))
+          .then(() => launcher.kill())
+          .catch(err => launcher.kill().then(
+            () => {
+              throw err;
+            },
+            console.error // eslint-disable-line no-console
+          ));
+      });
     }
   }
   return promise;
@@ -190,7 +192,7 @@ function runAnalysis() {
  * @param {{ignoreRun: boolean}} options
  * @return {!Promise}
  */
-function singleRunAnalysis(url, id, {ignoreRun}) {
+function singleRunAnalysis(url, id, { ignoreRun }) {
   console.log('Measuring site:', url, 'run:', id); // eslint-disable-line no-console
   const parsedURL = parseURL(url);
   const urlBasedFilename = sanitizeURL(`${parsedURL.host}-${parsedURL.pathname}`);
@@ -200,7 +202,7 @@ function singleRunAnalysis(url, id, {ignoreRun}) {
   }
   const outputPath = path.resolve(runPath, constants.LIGHTHOUSE_RESULTS_FILENAME);
   const assetsPath = path.resolve(runPath, 'assets');
-  return analyzeWithLighthouse(url, outputPath, assetsPath, {ignoreRun});
+  return analyzeWithLighthouse(url, outputPath, assetsPath, { ignoreRun });
 }
 
 /**
@@ -212,7 +214,7 @@ function singleRunAnalysis(url, id, {ignoreRun}) {
  * @param {{ignoreRun: boolean}} options
  * @return {!Promise}
  */
-function analyzeWithLighthouse(url, outputPath, assetsPath, {ignoreRun}) {
+function analyzeWithLighthouse(url, outputPath, assetsPath, { ignoreRun }) {
   return lighthouse(url, FLAGS, config)
     .then(lighthouseResults => {
       if (ignoreRun) {
