@@ -34,7 +34,11 @@ const DISABLE_DEVICE_EMULATION = args['disable-device-emulation'];
 const DISABLE_CPU_THROTTLING = args['disable-cpu-throttling'];
 const DISABLE_NETWORK_THROTTLING = args['disable-network-throttling'];
 const KEEP_FIRST_RUN = args['keep-first-run'];
-const NUMBER_OF_RUNS = args.n || 20;
+
+// Running it n + 1 times if the first run is deliberately ignored
+// because it has different perf characteristics from subsequent runs
+// (e.g. DNS cache which can't be easily reset between runs)
+const NUMBER_OF_RUNS = (args.n || 20) + (KEEP_FIRST_RUN ? 0 : 1);
 
 const FLAGS = {
   output: 'json',
@@ -53,7 +57,7 @@ const URLS = args.site ? [args.site] : [
 
   // TTI Tester sites
   // 'https://housing.com/in/buy/real-estate-hyderabad',
-  // 'http://www.npr.org/',
+  'http://www.npr.org/',
   // 'http://www.vevo.com/',
   // 'https://weather.com/',
   'https://www.nasa.gov/',
@@ -155,10 +159,7 @@ main();
 function runAnalysisWithNewChromeInstances() {
   let promise = Promise.resolve();
 
-  // Running it n + 1 times because the first run is deliberately ignored
-  // because it has different perf characteristics from subsequent runs
-  // (e.g. DNS cache which can't be easily reset between runs)
-  for (let i = 0; i <= NUMBER_OF_RUNS; i++) {
+  for (let i = 0; i < NUMBER_OF_RUNS; i++) {
     // Averages out any order-dependent effects such as memory pressure
     utils.shuffle(URLS);
 
