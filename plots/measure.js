@@ -30,9 +30,9 @@ const ChromeLauncher = require('../lighthouse-cli/chrome-launcher.js').ChromeLau
 const Printer = require('../lighthouse-cli/printer');
 const assetSaver = require('../lighthouse-core/lib/asset-saver.js');
 
-const DISABLE_DEVICE_EMULATION = args['disable-device-emulation'];
-const DISABLE_CPU_THROTTLING = args['disable-cpu-throttling'];
-const DISABLE_NETWORK_THROTTLING = args['disable-network-throttling'];
+const DISABLE_DEVICE_EMULATION = false;
+const DISABLE_CPU_THROTTLING = true;
+const DISABLE_NETWORK_THROTTLING = args['disable-network-throttling'] || false;
 const KEEP_FIRST_RUN = args['keep-first-run'];
 
 // Running it n + 1 times if the first run is deliberately ignored
@@ -46,7 +46,7 @@ const FLAGS = {
   disableNetworkThrottling: DISABLE_NETWORK_THROTTLING,
   disableDeviceEmulation: DISABLE_DEVICE_EMULATION,
 };
-console.log('Running lighthouse with flags: ', FLAGS);
+console.log('Running lighthouse with flag\n disableNetworkThrottling: ', FLAGS.disableNetworkThrottling);
 
 const SUBSET = [
   'https://en.wikipedia.org/wiki/Google',
