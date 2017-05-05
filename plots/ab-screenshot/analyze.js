@@ -90,10 +90,21 @@ function aggregate(outPathA, outPathB) {
     for (let i = 0; i < RUNS; i++) {
       const runDirA = getRunDir(sitePathA, i);
       const runDirB = getRunDir(sitePathB, i);
+
+      const runPathA = path.resolve(sitePathA, runDirA);
+      const runPathB = path.resolve(sitePathB, runDirB);
+
+      const lighthouseFileA = path.resolve(runPathA, constants.LIGHTHOUSE_RESULTS_FILENAME);
+      const lighthouseFileB = path.resolve(runPathB, constants.LIGHTHOUSE_RESULTS_FILENAME);
+
+      if (!utils.isFile(lighthouseFileA) || !utils.isFile(lighthouseFileB)) {
+        continue;
+      }
+
       const siteScreenshotsComparison = {
         siteName: `${siteDir} runA: ${runDirA} runB: ${runDirB}`,
-        runA: analyzeSingleRunScreenshots(path.resolve(sitePathA, runDirA)),
-        runB: analyzeSingleRunScreenshots(path.resolve(sitePathB, runDirB)),
+        runA: analyzeSingleRunScreenshots(runPathA),
+        runB: analyzeSingleRunScreenshots(runPathB),
       };
       results.push(siteScreenshotsComparison);
     }
