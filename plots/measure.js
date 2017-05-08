@@ -60,13 +60,15 @@ const SUBSET = [
   'http://www.espn.com/',
   'https://www.washingtonpost.com/pwa/',
   'http://www.npr.org/',
-  'https://www.nasa.gov/',
   'http://www.booking.com/',
   'https://youtube.com',
   'https://reddit.com',
   'https://ebay.com',
   'https://stackoverflow.com',
   'https://apple.com',
+
+  // Could not run nasa on gin3g
+  // 'https://www.nasa.gov/',
 ];
 const URLS = args.subset ? SUBSET : args.site ? [args.site] : [
   // Flagship sites
