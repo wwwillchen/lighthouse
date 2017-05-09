@@ -90,12 +90,12 @@ const URLS = args.subset ? SUBSET : args.site ? [args.site] : [
   'http://www.dawn.com/',
   'https://www.ebs.in/IPS/',
 
-  // // Sourced from: https://en.wikipedia.org/wiki/List_of_most_popular_websites
-  // // (http://www.alexa.com/topsites)
-  // // Removed adult websites and duplicates (e.g. google int'l websites)
-  // // Also removed sites that don't have significant index pages:
-  // // "t.co", "popads.net", "onclickads.net", "microsoftonline.com", "onclckds.com", "cnzz.com",
-  // // "live.com", "adf.ly", "googleusercontent.com",
+  // Sourced from: https://en.wikipedia.org/wiki/List_of_most_popular_websites
+  // (http://www.alexa.com/topsites)
+  // Removed adult websites and duplicates (e.g. google int'l websites)
+  // Also removed sites that don't have significant index pages:
+  // "t.co", "popads.net", "onclickads.net", "microsoftonline.com", "onclckds.com", "cnzz.com",
+  // "live.com", "adf.ly", "googleusercontent.com",
 
   'https://www.google.com/search?q=flowers',
   'https://youtube.com',
