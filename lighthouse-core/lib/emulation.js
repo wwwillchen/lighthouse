@@ -43,14 +43,15 @@ const NEXUS5X_USERAGENT = {
 
 /**
  * Adjustments needed for DevTools network throttling to simulate
- * more realistic network throttling conditions
+ * more realistic network conditions.
+ * See: crbug.com/721112
  */
 const LATENCY_FACTOR = 3.75;
 const THROUGHPUT_FACTOR = 0.9;
 
 const TARGET_LATENCY = 150; // 150ms
 const TARGET_DOWNLOAD_THROUGHPUT = Math.floor(1.6 * 1024 * 1024 / 8); // 1.6Mbps
-const TARGET_UPLOAD_THROUGHPUT = Math.floor(750 * 1024 / 8 * THROUGHPUT_FACTOR); // 750Kbps
+const TARGET_UPLOAD_THROUGHPUT = Math.floor(750 * 1024 / 8); // 750Kbps
 
 const TYPICAL_MOBILE_THROTTLING_METRICS = {
   targetLatency: TARGET_LATENCY,
