@@ -160,6 +160,7 @@ class Runner {
           runtimeConfig: Runner.getRuntimeConfig(opts.flags),
           score,
           reportCategories,
+          reportGroups: config.groups,
           aggregations
         };
       });
@@ -230,6 +231,7 @@ class Runner {
   static getAuditList() {
     const ignoredFiles = [
       'audit.js',
+      'violation-audit.js',
       'accessibility/axe-audit.js',
       'multi-check-audit.js',
       'byte-efficiency/byte-efficiency-audit.js'

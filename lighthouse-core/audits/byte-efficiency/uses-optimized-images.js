@@ -24,7 +24,7 @@
  */
 'use strict';
 
-const Audit = require('./byte-efficiency-audit');
+const ByteEfficiencyAudit = require('./byte-efficiency-audit');
 const URL = require('../../lib/url-shim');
 
 const IGNORE_THRESHOLD_IN_BYTES = 2048;
@@ -32,7 +32,7 @@ const TOTAL_WASTED_BYTES_THRESHOLD = 1000 * 1024;
 const JPEG_ALREADY_OPTIMIZED_THRESHOLD_IN_BYTES = 25 * 1024;
 const WEBP_ALREADY_OPTIMIZED_THRESHOLD_IN_BYTES = 100 * 1024;
 
-class UsesOptimizedImages extends Audit {
+class UsesOptimizedImages extends ByteEfficiencyAudit {
   /**
    * @return {!AuditMeta}
    */
@@ -40,13 +40,13 @@ class UsesOptimizedImages extends Audit {
     return {
       category: 'Images',
       name: 'uses-optimized-images',
-      description: 'Unoptimized images',
+      description: 'Optimize images',
       informative: true,
       helpText: 'Images should be optimized to save network bytes. ' +
         'The following images could have smaller file sizes when compressed with ' +
         '[WebP](https://developers.google.com/speed/webp/) or JPEG at 80 quality. ' +
         '[Learn more about image optimization](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/image-optimization).',
-      requiredArtifacts: ['OptimizedImages', 'networkRecords']
+      requiredArtifacts: ['OptimizedImages', 'devtoolsLogs']
     };
   }
 
@@ -63,8 +63,7 @@ class UsesOptimizedImages extends Audit {
 
   /**
    * @param {!Artifacts} artifacts
-   * @return {{results: !Array<Object>, tableHeadings: Object,
-   *     passes: boolean=, debugString: string=}}
+   * @return {!Audit.HeadingsResult}
    */
   static audit_(artifacts) {
     const images = artifacts.OptimizedImages;
@@ -81,7 +80,7 @@ class UsesOptimizedImages extends Audit {
         return results;
       }
 
-      const url = URL.getDisplayName(image.url);
+      const url = URL.getURLDisplayName(image.url);
       const webpSavings = UsesOptimizedImages.computeSavings(image, 'webp');
 
       if (webpSavings.bytes > WEBP_ALREADY_OPTIMIZED_THRESHOLD_IN_BYTES) {
@@ -106,7 +105,7 @@ class UsesOptimizedImages extends Audit {
       results.push({
         url,
         isCrossOrigin: !image.isSameOrigin,
-        preview: {url: image.url, mimeType: image.mimeType},
+        preview: {url: image.url, mimeType: image.mimeType, type: 'thumbnail'},
         totalBytes: image.originalSize,
         wastedBytes: webpSavings.bytes,
         webpSavings: this.toSavingsString(webpSavings.bytes, webpSavings.percent),
@@ -117,21 +116,23 @@ class UsesOptimizedImages extends Audit {
 
     let debugString;
     if (failedImages.length) {
-      const urls = failedImages.map(image => URL.getDisplayName(image.url));
+      const urls = failedImages.map(image => URL.getURLDisplayName(image.url));
       debugString = `Lighthouse was unable to decode some of your images: ${urls.join(', ')}`;
     }
+
+    const headings = [
+      {key: 'preview', itemType: 'thumbnail', text: ''},
+      {key: 'url', itemType: 'url', text: 'URL'},
+      {key: 'totalKb', itemType: 'text', text: 'Original'},
+      {key: 'webpSavings', itemType: 'text', text: 'Savings as WebP'},
+      {key: 'jpegSavings', itemType: 'text', text: 'Savings as JPEG'},
+    ];
 
     return {
       passes: hasAllEfficientImages && totalWastedBytes < TOTAL_WASTED_BYTES_THRESHOLD,
       debugString,
       results,
-      tableHeadings: {
-        preview: '',
-        url: 'URL',
-        totalKb: 'Original',
-        webpSavings: 'WebP Savings',
-        jpegSavings: 'JPEG Savings',
-      }
+      headings
     };
   }
 }

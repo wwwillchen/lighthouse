@@ -24,13 +24,13 @@
   */
 'use strict';
 
-const Audit = require('./byte-efficiency-audit');
+const ByteEfficiencyAudit = require('./byte-efficiency-audit');
 const URL = require('../../lib/url-shim');
 
 const IGNORE_THRESHOLD_IN_BYTES = 2048;
 const WASTEFUL_THRESHOLD_IN_BYTES = 25 * 1024;
 
-class UsesResponsiveImages extends Audit {
+class UsesResponsiveImages extends ByteEfficiencyAudit {
   /**
    * @return {!AuditMeta}
    */
@@ -38,13 +38,13 @@ class UsesResponsiveImages extends Audit {
     return {
       category: 'Images',
       name: 'uses-responsive-images',
-      description: 'Oversized images',
+      description: 'Properly size images',
       informative: true,
       helpText:
-        'Image sizes served should be based on the device display size to save network bytes. ' +
-        'Learn more about [responsive images](https://developers.google.com/web/fundamentals/design-and-ui/media/images) ' +
-        'and [client hints](https://developers.google.com/web/updates/2015/09/automating-resource-selection-with-client-hints).',
-      requiredArtifacts: ['ImageUsage', 'ViewportDimensions', 'networkRecords']
+        'Serve images that are appropriately-sized to save cellular data ' +
+        'and improve load time. ' +
+        '[Learn more](https://developers.google.com/web/tools/lighthouse/audits/oversized-images).',
+      requiredArtifacts: ['ImageUsage', 'ViewportDimensions', 'devtoolsLogs']
     };
   }
 
@@ -54,7 +54,7 @@ class UsesResponsiveImages extends Audit {
    * @return {?Object}
    */
   static computeWaste(image, DPR) {
-    const url = URL.getDisplayName(image.src);
+    const url = URL.getURLDisplayName(image.src);
     const actualPixels = image.naturalWidth * image.naturalHeight;
     const usedPixels = image.clientWidth * image.clientHeight * Math.pow(DPR, 2);
     const wastedRatio = 1 - (usedPixels / actualPixels);
@@ -68,6 +68,7 @@ class UsesResponsiveImages extends Audit {
     return {
       url,
       preview: {
+        type: 'thumbnail',
         url: image.networkRecord.url,
         mimeType: image.networkRecord.mimeType
       },
@@ -80,8 +81,7 @@ class UsesResponsiveImages extends Audit {
 
   /**
    * @param {!Artifacts} artifacts
-   * @return {{results: !Array<Object>, tableHeadings: Object,
-   *     passes: boolean=, debugString: string=}}
+   * @return {!Audit.HeadingsResult}
    */
   static audit_(artifacts) {
     const images = artifacts.ImageUsage;
@@ -111,16 +111,19 @@ class UsesResponsiveImages extends Audit {
 
     const results = Array.from(resultsMap.values())
         .filter(item => item.wastedBytes > IGNORE_THRESHOLD_IN_BYTES);
+
+    const headings = [
+      {key: 'preview', itemType: 'thumbnail', text: ''},
+      {key: 'url', itemType: 'url', text: 'URL'},
+      {key: 'totalKb', itemType: 'text', text: 'Original'},
+      {key: 'potentialSavings', itemType: 'text', text: 'Potential Savings'},
+    ];
+
     return {
       debugString,
       passes: !results.find(item => item.isWasteful),
       results,
-      tableHeadings: {
-        preview: '',
-        url: 'URL',
-        totalKb: 'Original',
-        potentialSavings: 'Potential Savings',
-      }
+      headings,
     };
   }
 }

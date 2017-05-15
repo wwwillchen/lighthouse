@@ -110,11 +110,11 @@ class Metrics {
         name: 'Visually Complete 85%',
         id: 'vc85',
         getTs: auditResults => {
-          const siExt = auditResults['time-to-interactive'].extendedInfo;
+          const siExt = auditResults['speed-index-metric'].extendedInfo;
           return safeGet(siExt, 'value.timestamps.visuallyReady');
         },
         getTiming: auditResults => {
-          const siExt = auditResults['time-to-interactive'].extendedInfo;
+          const siExt = auditResults['speed-index-metric'].extendedInfo;
           return safeGet(siExt, 'value.timings.visuallyReady');
         }
       },
@@ -143,38 +143,38 @@ class Metrics {
         }
       },
       {
-        name: 'Time to Interactive (vAlpha non-visual)',
-        id: 'tti-non-visual',
+        name: 'First Interactive (vBeta)',
+        id: 'ttfi',
         getTs: auditResults => {
-          const ttiExt = auditResults['time-to-interactive'].extendedInfo;
-          return safeGet(ttiExt, 'value.timestamps.timeToInteractiveB');
+          const ttfiExt = auditResults['first-interactive'].extendedInfo;
+          return safeGet(ttfiExt, 'value.timestamp');
         },
         getTiming: auditResults => {
-          const ttiExt = auditResults['time-to-interactive'].extendedInfo;
-          return safeGet(ttiExt, 'value.timings.timeToInteractiveB');
+          const ttfiExt = auditResults['first-interactive'].extendedInfo;
+          return safeGet(ttfiExt, 'value.timeInMs');
         }
       },
       {
-        name: 'Time to Interactive (vAlpha non-visual, 5s)',
-        id: 'tti-non-visual-5s',
+        name: 'Time to Consistently Interactive (vBeta)',
+        id: 'ttci',
         getTs: auditResults => {
-          const ttiExt = auditResults['time-to-interactive'].extendedInfo;
-          return safeGet(ttiExt, 'value.timestamps.timeToInteractiveC');
+          const ttiExt = auditResults['consistently-interactive'].extendedInfo;
+          return safeGet(ttiExt, 'value.timestamp');
         },
         getTiming: auditResults => {
-          const ttiExt = auditResults['time-to-interactive'].extendedInfo;
-          return safeGet(ttiExt, 'value.timings.timeToInteractiveC');
+          const ttiExt = auditResults['consistently-interactive'].extendedInfo;
+          return safeGet(ttiExt, 'value.timeInMs');
         }
       },
       {
         name: 'End of Trace',
         id: 'eot',
         getTs: auditResults => {
-          const ttiExt = auditResults['time-to-interactive'].extendedInfo;
+          const ttiExt = auditResults['first-meaningful-paint'].extendedInfo;
           return safeGet(ttiExt, 'value.timestamps.endOfTrace');
         },
         getTiming: auditResults => {
-          const ttiExt = auditResults['time-to-interactive'].extendedInfo;
+          const ttiExt = auditResults['first-meaningful-paint'].extendedInfo;
           return safeGet(ttiExt, 'value.timings.endOfTrace');
         }
       },
@@ -182,11 +182,11 @@ class Metrics {
         name: 'On Load',
         id: 'onload',
         getTs: auditResults => {
-          const ttiExt = auditResults['time-to-interactive'].extendedInfo;
+          const ttiExt = auditResults['first-meaningful-paint'].extendedInfo;
           return safeGet(ttiExt, 'value.timestamps.onLoad');
         },
         getTiming: auditResults => {
-          const ttiExt = auditResults['time-to-interactive'].extendedInfo;
+          const ttiExt = auditResults['first-meaningful-paint'].extendedInfo;
           return safeGet(ttiExt, 'value.timings.onLoad');
         }
       }

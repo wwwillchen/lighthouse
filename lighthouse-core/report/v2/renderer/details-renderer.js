@@ -15,7 +15,7 @@
  */
 'use strict';
 
-/* globals self */
+/* globals self CriticalRequestChainRenderer */
 
 class DetailsRenderer {
   /**
@@ -24,18 +24,40 @@ class DetailsRenderer {
   constructor(dom) {
     /** @private {!DOM} */
     this._dom = dom;
+    /** @private {!Document|!Element} */
+    this._templateContext; // eslint-disable-line no-unused-expressions
+  }
+
+  /**
+   * @param {!Document|!Element} context
+   */
+  setTemplateContext(context) {
+    this._templateContext = context;
   }
 
   /**
    * @param {!DetailsRenderer.DetailsJSON} details
-   * @return {!Element}
+   * @return {!Node}
    */
   render(details) {
     switch (details.type) {
       case 'text':
         return this._renderText(details);
+      case 'url':
+        return this._renderURL(details);
+      case 'thumbnail':
+        return this._renderThumbnail(/** @type {!DetailsRenderer.ThumbnailDetails} */ (details));
       case 'cards':
         return this._renderCards(/** @type {!DetailsRenderer.CardsDetailsJSON} */ (details));
+      case 'table':
+        return this._renderTable(/** @type {!DetailsRenderer.TableDetailsJSON} */ (details));
+      case 'code':
+        return this._renderCode(details);
+      case 'node':
+        return this.renderNode(/** @type {!DetailsRenderer.NodeDetailsJSON} */(details));
+      case 'criticalrequestchain':
+        return CriticalRequestChainRenderer.render(this._dom, this._templateContext,
+            /** @type {!CriticalRequestChainRenderer.CRCDetailsJSON} */ (details));
       case 'list':
         return this._renderList(/** @type {!DetailsRenderer.ListDetailsJSON} */ (details));
       default:
@@ -47,9 +69,37 @@ class DetailsRenderer {
    * @param {!DetailsRenderer.DetailsJSON} text
    * @return {!Element}
    */
+  _renderURL(text) {
+    const element = this._renderText(text);
+    element.classList.add('lh-text__url');
+    return element;
+  }
+
+  /**
+   * @param {!DetailsRenderer.DetailsJSON} text
+   * @return {!Element}
+   */
   _renderText(text) {
     const element = this._dom.createElement('div', 'lh-text');
     element.textContent = text.text;
+    return element;
+  }
+
+  /**
+   * Create small thumbnail with scaled down image asset.
+   * If the supplied details doesn't have an image/* mimeType, then an empty span is returned.
+   * @param {!DetailsRenderer.ThumbnailDetails} value
+   * @return {!Element}
+   */
+  _renderThumbnail(value) {
+    if (/^image/.test(value.mimeType) === false) {
+      return this._dom.createElement('span');
+    }
+
+    const element = this._dom.createElement('img', 'lh-thumbnail');
+    element.src = value.url;
+    element.alt = '';
+    element.title = value.url;
     return element;
   }
 
@@ -71,6 +121,48 @@ class DetailsRenderer {
     }
     element.appendChild(itemsElem);
     return element;
+  }
+
+  /**
+   * @param {!DetailsRenderer.TableDetailsJSON} details
+   * @return {!Element}
+   */
+  _renderTable(details) {
+    if (!details.items.length) return this._dom.createElement('span');
+
+    const element = this._dom.createElement('details', 'lh-details');
+    if (details.header) {
+      element.appendChild(this._dom.createElement('summary')).textContent = details.header;
+    }
+
+    const tableElem = this._dom.createChildOf(element, 'table', 'lh-table');
+    const theadElem = this._dom.createChildOf(tableElem, 'thead');
+    const theadTrElem = this._dom.createChildOf(theadElem, 'tr');
+
+    for (const heading of details.itemHeaders) {
+      const itemType = heading.itemType || 'text';
+      const classes = `lh-table-column--${itemType}`;
+      this._dom.createChildOf(theadTrElem, 'th', classes).appendChild(this.render(heading));
+    }
+
+    const tbodyElem = this._dom.createChildOf(tableElem, 'tbody');
+    for (const row of details.items) {
+      const rowElem = this._dom.createChildOf(tbodyElem, 'tr');
+      for (const columnItem of row) {
+        const classes = `lh-table-column--${columnItem.type}`;
+        this._dom.createChildOf(rowElem, 'td', classes).appendChild(this.render(columnItem));
+      }
+    }
+    return element;
+  }
+
+  /**
+   * @param {!DetailsRenderer.NodeDetailsJSON} item
+   * @return {!Element}
+   * @protected
+   */
+  renderNode(item) {
+    throw new Error('Not yet implemented', item);
   }
 
   /**
@@ -101,6 +193,16 @@ class DetailsRenderer {
 
     element.appendChild(cardsParent);
     return element;
+  }
+
+  /**
+   * @param {!DetailsRenderer.DetailsJSON} details
+   * @return {!Element}
+   */
+  _renderCode(details) {
+    const pre = this._dom.createElement('pre', 'lh-code');
+    pre.textContent = details.text;
+    return pre;
   }
 }
 
@@ -134,3 +236,40 @@ DetailsRenderer.ListDetailsJSON; // eslint-disable-line no-unused-expressions
  * }}
  */
 DetailsRenderer.CardsDetailsJSON; // eslint-disable-line no-unused-expressions
+
+/**
+ * @typedef {{
+ *     type: string,
+ *     itemType: (string|undefined),
+ *     text: (string|undefined)
+ * }}
+ */
+DetailsRenderer.TableHeaderJSON; // eslint-disable-line no-unused-expressions
+
+/**
+ * @typedef {{
+ *     type: string,
+ *     text: (string|undefined),
+ *     path: (string|undefined),
+ *     selector: (string|undefined),
+ *     snippet:(string|undefined)
+ * }}
+ */
+DetailsRenderer.NodeDetailsJSON; // eslint-disable-line no-unused-expressions
+
+/** @typedef {{
+ *     type: string,
+ *     header: ({text: string}|undefined),
+ *     items: !Array<!Array<!DetailsRenderer.DetailsJSON>>,
+ *     itemHeaders: !Array<!DetailsRenderer.TableHeaderJSON>
+ * }}
+ */
+DetailsRenderer.TableDetailsJSON; // eslint-disable-line no-unused-expressions
+
+/** @typedef {{
+ *     type: string,
+ *     url: ({text: string}|undefined),
+ *     mimeType: ({text: string}|undefined)
+ * }}
+ */
+DetailsRenderer.ThumbnailDetails; // eslint-disable-line no-unused-expressions
