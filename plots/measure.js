@@ -21,8 +21,12 @@ const parseURL = require('url').parse;
 
 const mkdirp = require('mkdirp');
 const args = require('yargs')
+  .wrap(Math.min(process.stdout.columns, 120))
   .help('help')
-  .usage('npm run measure -- [options]')
+  .usage('node measure.js [options]')
+  .example('node $0 -n 3 --sites-path ./sample-sites.json')
+  .example('node $0 --site https://google.com/')
+  .example('node $0 --subset')
   .describe({
     'n': 'Number of runs to do per site',
     'reuse-chrome': 'Reuse the same Chrome instance across all site runs',
@@ -40,7 +44,7 @@ const args = require('yargs')
   .describe({
     'sites-path': 'Include relative path of a json file with urls to run',
     'subset': 'Measure a subset of popular sites',
-    'site': 'Include a specific site URL to run',
+    'site': 'Include a specific site url to run',
   })
   .boolean(['disable-device-emulation', 'disable-cpu-throttling', 'disable-network-throttling'])
   .argv;
@@ -221,8 +225,9 @@ function main() {
         console.error // eslint-disable-line no-console
       ));
       return;
+  } else {
+    runAnalysisWithNewChromeInstances();
   }
-  runAnalysisWithNewChromeInstances();
 }
 
 main();
