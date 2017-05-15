@@ -41,13 +41,10 @@ const NEXUS5X_USERAGENT = {
     '(KHTML, like Gecko) Chrome/59.0.3033.0 Mobile Safari/537.36'
 };
 
-const LATENCY_FACTOR = 3.75;
-const THROUGHPUT_FACTOR = 1.1;
-
 const TYPICAL_MOBILE_THROTTLING_METRICS = {
-  latency: 150 * LATENCY_FACTOR, // 150ms
-  downloadThroughput: Math.floor(1.6 * 1024 * 1024 / 8) / THROUGHPUT_FACTOR, // 1.6Mbps
-  uploadThroughput: Math.floor(750 * 1024 / 8) / THROUGHPUT_FACTOR, // 750Kbps
+  latency: 150, // 150ms
+  downloadThroughput: Math.floor(1.6 * 1024 * 1024 / 8), // 1.6Mbps
+  uploadThroughput: Math.floor(750 * 1024 / 8), // 750Kbps
   offline: false
 };
 
