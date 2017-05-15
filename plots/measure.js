@@ -20,7 +20,30 @@ const path = require('path');
 const parseURL = require('url').parse;
 
 const mkdirp = require('mkdirp');
-const args = require('yargs').argv;
+const args = require('yargs')
+  .help('help')
+  .usage('npm run measure -- [options]')
+  .describe({
+    'n': 'Number of runs to do per site',
+    'reuse-chrome': 'Reuse the same Chrome instance across all site runs',
+    'keep-first-run': 'By default if you use --reuse-chrome, the first run results are discarded',
+  })
+  .group(
+    ['disable-device-emulation', 'disable-cpu-throttling', 'disable-network-throttling'],
+    'Chrome DevTools settings:')
+  .describe({
+    'disable-device-emulation': 'Disable Nexus 5X emulation',
+    'disable-cpu-throttling': 'Disable CPU throttling',
+    'disable-network-throttling': 'Disable network throttling',
+  })
+  .group(['sites-path', 'subset', 'site'], 'Options to specify sites:')
+  .describe({
+    'sites-path': 'Include relative path of a json file with urls to run',
+    'subset': 'Measure a subset of popular sites',
+    'site': 'Include a specific site URL to run',
+  })
+  .boolean(['disable-device-emulation', 'disable-cpu-throttling', 'disable-network-throttling'])
+  .argv;
 
 const constants = require('./constants.js');
 const utils = require('./utils.js');
@@ -30,15 +53,20 @@ const ChromeLauncher = require('../lighthouse-cli/chrome-launcher.js').ChromeLau
 const Printer = require('../lighthouse-cli/printer');
 const assetSaver = require('../lighthouse-core/lib/asset-saver.js');
 
-const DISABLE_DEVICE_EMULATION = false;
-const DISABLE_CPU_THROTTLING = true;
-const DISABLE_NETWORK_THROTTLING = args['disable-network-throttling'] || false;
-const KEEP_FIRST_RUN = args['keep-first-run'];
+const DISABLE_DEVICE_EMULATION = args['disable-device-emulation'];
+const DISABLE_CPU_THROTTLING = args['disable-cpu-throttling'];
+const DISABLE_NETWORK_THROTTLING = args['disable-network-throttling'];
+const REUSE_CHROME = args['reuse-chrome'];
+const KEEP_FIRST_RUN = args['keep-first-run'] || !REUSE_CHROME;
+const SITES_PATH = args['sites-path'];
+const SUBSET = args['subset'];
+const SITE = args['site'];
+const CUSTOM_NUMBER_OF_RUNS = args['n'];
 
 // Running it n + 1 times if the first run is deliberately ignored
 // because it has different perf characteristics from subsequent runs
 // (e.g. DNS cache which can't be easily reset between runs)
-const NUMBER_OF_RUNS = (args.n || 20) + (KEEP_FIRST_RUN ? 0 : 1);
+const NUMBER_OF_RUNS = (CUSTOM_NUMBER_OF_RUNS || 20) + (KEEP_FIRST_RUN ? 0 : 1);
 
 const FLAGS = {
   output: 'json',
@@ -46,31 +74,8 @@ const FLAGS = {
   disableNetworkThrottling: DISABLE_NETWORK_THROTTLING,
   disableDeviceEmulation: DISABLE_DEVICE_EMULATION,
 };
-console.log('Running lighthouse with flag\n disableNetworkThrottling: ', FLAGS.disableNetworkThrottling);
 
-const SUBSET = [
-  'https://en.wikipedia.org/wiki/Google',
-  'https://mobile.twitter.com/ChromeDevTools',
-  'https://www.instagram.com/stephencurry30',
-  'https://amazon.com',
-  'https://nytimes.com',
-  'https://www.google.com/search?q=flowers',
-
-  'https://flipkart.com',
-  'http://www.espn.com/',
-  'https://www.washingtonpost.com/pwa/',
-  'http://www.npr.org/',
-  'http://www.booking.com/',
-  'https://youtube.com',
-  'https://reddit.com',
-  'https://ebay.com',
-  'https://stackoverflow.com',
-  'https://apple.com',
-
-  // Could not run nasa on gin3g
-  // 'https://www.nasa.gov/',
-];
-const URLS = args.subset ? SUBSET : args.site ? [args.site] : [
+const SITES = [
   // Flagship sites
   'https://nytimes.com',
   'https://flipkart.com',
@@ -156,12 +161,45 @@ const URLS = args.subset ? SUBSET : args.site ? [args.site] : [
   'https://bbc.com'
 ];
 
-/**
- * Launches Chrome once at the beginning, runs all the analysis,
- * and then kills Chrome.
- * TODO(chenwilliam): measure the overhead of starting chrome, if it's minimal
- * then open a fresh Chrome instance for each run.
- */
+function getUrls() {
+  if (SITES_PATH) {
+    return require(path.resolve(__dirname, SITES_PATH));
+  }
+
+  if (SITE) {
+    return [SITE];
+  }
+
+  if (SUBSET) {
+    return [
+      'https://en.wikipedia.org/wiki/Google',
+      'https://mobile.twitter.com/ChromeDevTools',
+      'https://www.instagram.com/stephencurry30',
+      'https://amazon.com',
+      'https://nytimes.com',
+      'https://www.google.com/search?q=flowers',
+
+      'https://flipkart.com',
+      'http://www.espn.com/',
+      'https://www.washingtonpost.com/pwa/',
+      'http://www.npr.org/',
+      'http://www.booking.com/',
+      'https://youtube.com',
+      'https://reddit.com',
+      'https://ebay.com',
+      'https://stackoverflow.com',
+      'https://apple.com',
+
+      // Could not run nasa on gin3g
+      'https://www.nasa.gov/',
+    ];
+  }
+
+  return SITES;
+}
+
+const URLS = getUrls();
+
 function main() {
   if (utils.isDir(constants.OUT_PATH)) {
     console.log('ERROR: Found output from previous run at: ', constants.OUT_PATH); // eslint-disable-line no-console
@@ -169,12 +207,28 @@ function main() {
     return;
   }
 
-  runAnalysisWithNewChromeInstances()
+  if (REUSE_CHROME) {
+    const launcher = new ChromeLauncher();
+    launcher
+      .isDebuggerReady()
+      .catch(() => launcher.run())
+      .then(() => runAnalysisWithExistingChromeInstances())
+      .then(() => launcher.kill())
+      .catch(err => launcher.kill().then(
+        () => {
+          throw err;
+        },
+        console.error // eslint-disable-line no-console
+      ));
+      return;
+  }
+  runAnalysisWithNewChromeInstances();
 }
 
 main();
 
 /**
+ * Launches a new Chrome instance for each site run.
  * Returns a promise chain that analyzes all the sites n times.
  * @return {!Promise}
  */
@@ -193,7 +247,7 @@ function runAnalysisWithNewChromeInstances() {
         const launcher = new ChromeLauncher();
         return launcher.isDebuggerReady()
           .catch(() => launcher.run())
-          .then(() => singleRunAnalysis(url, id, { ignoreRun }))
+          .then(() => singleRunAnalysis(url, id, {ignoreRun}))
           .then(() => launcher.kill())
           .catch(err => launcher.kill().then(
             () => {
@@ -208,13 +262,38 @@ function runAnalysisWithNewChromeInstances() {
 }
 
 /**
+ * Reuses existing Chrome instance for all site runs.
+ * Returns a promise chain that analyzes all the sites n times.
+ * @return {!Promise}
+ */
+function runAnalysisWithExistingChromeInstances() {
+  let promise = Promise.resolve();
+
+  // Running it n + 1 times because the first run is deliberately ignored
+  // because it has different perf characteristics from subsequent runs
+  // (e.g. DNS cache which can't be easily reset between runs)
+  for (let i = 0; i <= NUMBER_OF_RUNS; i++) {
+    // Averages out any order-dependent effects such as memory pressure
+    utils.shuffle(URLS);
+
+    const id = i.toString();
+    const isFirstRun = i === 0;
+    const ignoreRun = KEEP_FIRST_RUN ? false : isFirstRun;
+    for (const url of URLS) {
+      promise = promise.then(() => singleRunAnalysis(url, id, {ignoreRun}));
+    }
+  }
+  return promise;
+}
+
+/**
  * Analyzes a site a single time using lighthouse.
  * @param {string} url
  * @param {string} id
  * @param {{ignoreRun: boolean}} options
  * @return {!Promise}
  */
-function singleRunAnalysis(url, id, { ignoreRun }) {
+function singleRunAnalysis(url, id, {ignoreRun}) {
   console.log('Measuring site:', url, 'run:', id); // eslint-disable-line no-console
   const parsedURL = parseURL(url);
   const urlBasedFilename = sanitizeURL(`${parsedURL.host}-${parsedURL.pathname}`);
@@ -224,7 +303,7 @@ function singleRunAnalysis(url, id, { ignoreRun }) {
   }
   const outputPath = path.resolve(runPath, constants.LIGHTHOUSE_RESULTS_FILENAME);
   const assetsPath = path.resolve(runPath, 'assets');
-  return analyzeWithLighthouse(url, outputPath, assetsPath, { ignoreRun });
+  return analyzeWithLighthouse(url, outputPath, assetsPath, {ignoreRun});
 }
 
 /**
@@ -236,7 +315,7 @@ function singleRunAnalysis(url, id, { ignoreRun }) {
  * @param {{ignoreRun: boolean}} options
  * @return {!Promise}
  */
-function analyzeWithLighthouse(url, outputPath, assetsPath, { ignoreRun }) {
+function analyzeWithLighthouse(url, outputPath, assetsPath, {ignoreRun}) {
   return lighthouse(url, FLAGS, config)
     .then(lighthouseResults => {
       if (ignoreRun) {
