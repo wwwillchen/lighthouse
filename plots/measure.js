@@ -214,11 +214,12 @@ function main() {
   }
 
   if (REUSE_CHROME) {
-    const launcher = ChromeLauncher.launch();
-    return launcher
-      .then(() => runAnalysisWithExistingChromeInstances())
-      .catch(err => console.error(err))
-      .then(() => launcher.kill());
+    ChromeLauncher.launch({port: 9222}).then(launcher => {
+      return runAnalysisWithExistingChromeInstances()
+        .catch(err => console.error(err))
+        .then(() => launcher.kill());
+    });
+    return;
   } else {
     runAnalysisWithNewChromeInstances();
   }
@@ -243,11 +244,12 @@ function runAnalysisWithNewChromeInstances() {
     const ignoreRun = KEEP_FIRST_RUN ? false : isFirstRun;
     for (const url of URLS) {
       promise = promise.then(() => {
-        const launcher = ChromeLauncher.launch();
-        return launcher
-          .then(() => singleRunAnalysis(url, id, {ignoreRun}))
-          .catch(err => console.error(err))
-          .then(() => launcher.kill());
+        return ChromeLauncher.launch({port: 9222}).then(launcher => {
+          return singleRunAnalysis(url, id, {ignoreRun})
+            .catch(err => console.error(err))
+            .then(() => launcher.kill());
+        })
+        .catch(err => console.error(err));
       });
     }
   }
@@ -262,10 +264,7 @@ function runAnalysisWithNewChromeInstances() {
 function runAnalysisWithExistingChromeInstances() {
   let promise = Promise.resolve();
 
-  // Running it n + 1 times because the first run is deliberately ignored
-  // because it has different perf characteristics from subsequent runs
-  // (e.g. DNS cache which can't be easily reset between runs)
-  for (let i = 0; i <= NUMBER_OF_RUNS; i++) {
+  for (let i = 0; i < NUMBER_OF_RUNS; i++) {
     // Averages out any order-dependent effects such as memory pressure
     utils.shuffle(URLS);
 
