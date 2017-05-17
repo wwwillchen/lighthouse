@@ -41,6 +41,7 @@ const args = require('yargs')
     'disable-device-emulation': 'Disable Nexus 5X emulation',
     'disable-cpu-throttling': 'Disable CPU throttling',
     'disable-network-throttling': 'Disable network throttling',
+    'keep-network-cache': 'Keep network cache between runs',
   })
   .group(['sites-path', 'subset', 'site'], 'Options to specify sites:')
   .describe({
@@ -62,6 +63,7 @@ const assetSaver = require('../lighthouse-core/lib/asset-saver.js');
 const DISABLE_DEVICE_EMULATION = args['disable-device-emulation'];
 const DISABLE_CPU_THROTTLING = args['disable-cpu-throttling'];
 const DISABLE_NETWORK_THROTTLING = args['disable-network-throttling'];
+const KEEP_NETWORK_CACHE = args['keep-network-cache'];
 const REUSE_CHROME = args['reuse-chrome'];
 const KEEP_FIRST_RUN = args['keep-first-run'] || !REUSE_CHROME;
 const SITES_PATH = args['sites-path'];
@@ -74,11 +76,16 @@ const CUSTOM_NUMBER_OF_RUNS = args['n'];
 // (e.g. DNS cache which can't be easily reset between runs)
 const NUMBER_OF_RUNS = (CUSTOM_NUMBER_OF_RUNS || 20) + (KEEP_FIRST_RUN ? 0 : 1);
 
+const LAUNCH_CONFIG = {
+  port: 9222,
+};
+
 const FLAGS = {
   output: 'json',
   disableCpuThrottling: DISABLE_CPU_THROTTLING,
   disableNetworkThrottling: DISABLE_NETWORK_THROTTLING,
   disableDeviceEmulation: DISABLE_DEVICE_EMULATION,
+  keepNetworkCache: KEEP_NETWORK_CACHE,
 };
 
 const SITES = [
@@ -214,7 +221,7 @@ function main() {
   }
 
   if (REUSE_CHROME) {
-    ChromeLauncher.launch({port: 9222}).then(launcher => {
+    ChromeLauncher.launch(LAUNCH_CONFIG).then(launcher => {
       return runAnalysisWithExistingChromeInstances()
         .catch(err => console.error(err))
         .then(() => launcher.kill());
@@ -244,7 +251,7 @@ function runAnalysisWithNewChromeInstances() {
     const ignoreRun = KEEP_FIRST_RUN ? false : isFirstRun;
     for (const url of URLS) {
       promise = promise.then(() => {
-        return ChromeLauncher.launch({port: 9222}).then(launcher => {
+        return ChromeLauncher.launch(LAUNCH_CONFIG).then(launcher => {
           return singleRunAnalysis(url, id, {ignoreRun})
             .catch(err => console.error(err))
             .then(() => launcher.kill());

@@ -212,7 +212,7 @@ class GatherRunner {
 
     const pass = Promise.resolve()
       // Clear disk & memory cache if it's a perf run
-      .then(_ => isPerfRun && driver.cleanBrowserCaches())
+      .then(_ => isPerfRun && driver.cleanBrowserCaches(options.flags))
       // Always record devtoolsLog
       .then(_ => driver.beginDevtoolsLog())
       // Begin tracing if requested by config.
