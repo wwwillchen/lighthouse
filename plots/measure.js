@@ -204,7 +204,7 @@ function getUrls() {
       'https://apple.com',
 
       // Could not run nasa on gin3g
-      'https://www.nasa.gov/',
+      // 'https://www.nasa.gov/',
     ];
   }
 
