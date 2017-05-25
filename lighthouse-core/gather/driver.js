@@ -815,7 +815,16 @@ class Driver {
         .then(_ => this.online = true);
   }
 
-  cleanBrowserCaches() {
+  /**
+   *
+   * @param {TODO} flags
+   */
+  cleanBrowserCaches(flags) {
+    if (flags.keepNetworkCache) {
+      console.log('skip clearing browser cache');
+      return Promise.resolve();
+    }
+
     // Wipe entire disk cache
     return this.sendCommand('Network.clearBrowserCache')
       // Toggle 'Disable Cache' to evict the memory cache

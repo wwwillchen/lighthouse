@@ -52,6 +52,7 @@ class TimelineModel {
     this._tracingModel.addEvents(events);
     this._tracingModel.tracingComplete();
     this._timelineModel.setEvents(this._tracingModel);
+    this._logCount = ConsoleQuieter._logs.length;
     ConsoleQuieter.unmuteAndFlush();
 
     return this;
@@ -67,6 +68,10 @@ class TimelineModel {
 
   tracingModel() {
     return this._tracingModel;
+  }
+
+  logCount() {
+    return this._logCount;
   }
 
   topDown() {

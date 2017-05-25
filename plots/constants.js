@@ -21,6 +21,7 @@ const path = require('path');
 const OUT_PATH = path.resolve(__dirname, 'out');
 const LIGHTHOUSE_RESULTS_FILENAME = 'lighthouse.json';
 const SCREENSHOTS_FILENAME = 'assets-0.screenshots.json';
+const TRACE_FILENAME = 'assets-0.trace.json';
 
 const TIMING_NAME_MAP = {
   'total': 'Lighthouse Execution'
@@ -30,5 +31,6 @@ module.exports = {
   OUT_PATH,
   LIGHTHOUSE_RESULTS_FILENAME,
   SCREENSHOTS_FILENAME,
-  TIMING_NAME_MAP
+  TIMING_NAME_MAP,
+  TRACE_FILENAME,
 };
