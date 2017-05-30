@@ -15,7 +15,7 @@
  */
 'use strict';
 
-/* globals self CriticalRequestChainRenderer */
+/* globals self CriticalRequestChainRenderer Util */
 
 class DetailsRenderer {
   /**
@@ -47,6 +47,8 @@ class DetailsRenderer {
         return this._renderURL(details);
       case 'thumbnail':
         return this._renderThumbnail(/** @type {!DetailsRenderer.ThumbnailDetails} */ (details));
+      case 'filmstrip':
+        return this._renderFilmstrip(/** @type {!DetailsRenderer.FilmstripDetails} */ (details));
       case 'cards':
         return this._renderCards(/** @type {!DetailsRenderer.CardsDetailsJSON} */ (details));
       case 'table':
@@ -70,8 +72,30 @@ class DetailsRenderer {
    * @return {!Element}
    */
   _renderURL(text) {
-    const element = this._renderText(text);
+    const url = text.text || '';
+
+    let displayedURL;
+    let title;
+    try {
+      displayedURL = Util.parseURL(url).file;
+      title = url;
+    } catch (/** @type {!Error} */ e) {
+      if (!(e instanceof TypeError)) {
+        throw e;
+      }
+      displayedURL = url;
+    }
+
+    const element = this._renderText({
+      type: 'url',
+      text: displayedURL
+    });
     element.classList.add('lh-text__url');
+
+    if (title) {
+      element.title = url;
+    }
+
     return element;
   }
 
@@ -108,6 +132,8 @@ class DetailsRenderer {
    * @return {!Element}
    */
   _renderList(list) {
+    if (!list.items.length) return this._dom.createElement('span');
+
     const element = this._dom.createElement('details', 'lh-details');
     if (list.header) {
       const summary = this._dom.createElement('summary', 'lh-list__header');
@@ -115,11 +141,11 @@ class DetailsRenderer {
       element.appendChild(summary);
     }
 
-    const itemsElem = this._dom.createElement('div', 'lh-list__items');
+    const itemsElem = this._dom.createChildOf(element, 'div', 'lh-list__items');
     for (const item of list.items) {
-      itemsElem.appendChild(this.render(item));
+      const itemElem = this._dom.createChildOf(itemsElem, 'span', 'lh-list__item');
+      itemElem.appendChild(this.render(item));
     }
-    element.appendChild(itemsElem);
     return element;
   }
 
@@ -162,7 +188,14 @@ class DetailsRenderer {
    * @protected
    */
   renderNode(item) {
-    throw new Error('Not yet implemented', item);
+    const element = this._dom.createElement('span', 'lh-node');
+    element.textContent = item.snippet;
+    element.title = item.selector;
+    if (item.text) element.setAttribute('data-text', item.text);
+    if (item.path) element.setAttribute('data-path', item.path);
+    if (item.selector) element.setAttribute('data-selector', item.selector);
+    if (item.snippet) element.setAttribute('data-snippet', item.snippet);
+    return element;
   }
 
   /**
@@ -193,6 +226,34 @@ class DetailsRenderer {
 
     element.appendChild(cardsParent);
     return element;
+  }
+
+  /**
+   * @param {!DetailsRenderer.FilmstripDetails} details
+   * @return {!Element}
+   */
+  _renderFilmstrip(details) {
+    const filmstripEl = this._dom.createElement('div', 'lh-filmstrip');
+
+    for (const thumbnail of details.items) {
+      const frameEl = this._dom.createChildOf(filmstripEl, 'div', 'lh-filmstrip__frame');
+
+      let timing = thumbnail.timing.toLocaleString() + ' ms';
+      if (thumbnail.timing > 1000) {
+        timing = Util.formatNumber(thumbnail.timing / 1000) + ' s';
+      }
+
+      const timingEl = this._dom.createChildOf(frameEl, 'div', 'lh-filmstrip__timestamp');
+      timingEl.textContent = timing;
+
+      const base64data = thumbnail.data;
+      this._dom.createChildOf(frameEl, 'img', 'lh-filmstrip__thumbnail', {
+        src: `data:image/jpeg;base64,${base64data}`,
+        alt: `Screenshot at ${timing}`,
+      });
+    }
+
+    return filmstripEl;
   }
 
   /**
@@ -228,6 +289,17 @@ DetailsRenderer.DetailsJSON; // eslint-disable-line no-unused-expressions
  * }}
  */
 DetailsRenderer.ListDetailsJSON; // eslint-disable-line no-unused-expressions
+
+/**
+ * @typedef {{
+ *     type: string,
+ *     text: (string|undefined),
+ *     path: (string|undefined),
+ *     selector: (string|undefined),
+ *     snippet:(string|undefined)
+ * }}
+ */
+DetailsRenderer.NodeDetailsJSON; // eslint-disable-line no-unused-expressions
 
 /** @typedef {{
  *     type: string,
@@ -273,3 +345,11 @@ DetailsRenderer.TableDetailsJSON; // eslint-disable-line no-unused-expressions
  * }}
  */
 DetailsRenderer.ThumbnailDetails; // eslint-disable-line no-unused-expressions
+
+/** @typedef {{
+ *     type: string,
+ *     scale: number,
+ *     items: !Array<{timing: number, timestamp: number, data: string}>,
+ * }}
+ */
+DetailsRenderer.FilmstripDetails; // eslint-disable-line no-unused-expressions

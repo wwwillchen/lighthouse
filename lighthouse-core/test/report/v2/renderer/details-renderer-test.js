@@ -20,6 +20,7 @@ const fs = require('fs');
 const jsdom = require('jsdom');
 const URL = require('../../../../lib/url-shim');
 const DOM = require('../../../../report/v2/renderer/dom.js');
+const Util = require('../../../../report/v2/renderer/util.js');
 const DetailsRenderer = require('../../../../report/v2/renderer/details-renderer.js');
 
 const TEMPLATE_FILE = fs.readFileSync(__dirname + '/../../../../report/v2/templates.html', 'utf8');
@@ -31,6 +32,7 @@ describe('DetailsRenderer', () => {
 
   before(() => {
     global.URL = URL;
+    global.Util = Util;
     const document = jsdom.jsdom(TEMPLATE_FILE);
     const dom = new DOM(document);
     renderer = new DetailsRenderer(dom);
@@ -38,6 +40,7 @@ describe('DetailsRenderer', () => {
 
   after(() => {
     global.URL = undefined;
+    global.Util = undefined;
   });
 
   describe('render', () => {
@@ -133,6 +136,29 @@ describe('DetailsRenderer', () => {
       assert.ok(el.localName === 'img');
       assert.ok(el.classList.contains('lh-thumbnail'));
       assert.equal(el.src, 'http://example.com/my-image.jpg');
+    });
+
+    it('renders filmstrips', () => {
+      const el = renderer.render({
+        type: 'filmstrip',
+        items: [
+          {timing: 1020, data: 'foobar'},
+          {timing: 3030, data: 'foobaz'},
+        ],
+      });
+
+      assert.ok(el.localName === 'div');
+      assert.ok(el.classList.contains('lh-filmstrip'));
+
+      const frames = [...el.querySelectorAll('.lh-filmstrip__frame')];
+      assert.equal(frames.length, 2);
+      assert.equal(frames[0].textContent, '1 s');
+      assert.equal(frames[1].textContent, '3 s');
+
+      const thumbnails = [...el.querySelectorAll('.lh-filmstrip__thumbnail')];
+      assert.equal(thumbnails.length, 2);
+      assert.equal(thumbnails[0].src, 'data:image/jpeg;base64,foobar');
+      assert.ok(thumbnails[0].alt, 'did not set alt text');
     });
 
     it('renders tables', () => {

@@ -24,12 +24,15 @@
  */
 
 const Audit = require('./audit');
+const URL = require('../lib/url-shim');
 const Emulation = require('../lib/emulation');
 const Formatter = require('../report/formatter');
 
 // Maximum TTFI to be considered "fast" for PWA baseline checklist
 //   https://developers.google.com/web/progressive-web-apps/checklist
 const MAXIMUM_TTFI = 10 * 1000;
+
+const WHITELISTED_STATUS_CODES = [307];
 
 class LoadFastEnough4Pwa extends Audit {
   /**
@@ -40,7 +43,7 @@ class LoadFastEnough4Pwa extends Audit {
       category: 'PWA',
       name: 'load-fast-enough-for-pwa',
       description: 'Page load is fast enough on 3G',
-      helpText: 'Satisfied if the Time To Interactive duration is shorter than 10 seconds, as defined by the [PWA Baseline Checklist](https://developers.google.com/web/progressive-web-apps/checklist). Network throttling is required (specifically: RTT latencies >= 150 RTT are expected).',
+      helpText: 'Satisfied if First Interactive is less than 10 seconds, as defined by the [PWA Baseline Checklist](https://developers.google.com/web/progressive-web-apps/checklist). Network throttling is required (specifically: RTT latencies >= 150 RTT are expected).',
       requiredArtifacts: ['traces', 'devtoolsLogs']
     };
   }
@@ -52,27 +55,47 @@ class LoadFastEnough4Pwa extends Audit {
   static audit(artifacts) {
     const devtoolsLogs = artifacts.devtoolsLogs[Audit.DEFAULT_PASS];
     return artifacts.requestNetworkRecords(devtoolsLogs).then(networkRecords => {
-      const allRequestLatencies = networkRecords.map(record => {
-        // Ignore requests that don't have timing data or resources that have
-        // previously been requested and are coming from the cache.
-        // Also ignore unfinished requests since they won't have timing information.
+      const firstRequestLatenciesByOrigin = new Map();
+      networkRecords.forEach(record => {
+        // Ignore requests that don't have valid origin, timing data, came from the cache, were
+        // redirected by Chrome without going to the network, or are not finished.
         const fromCache = record._fromDiskCache || record._fromMemoryCache;
-        if (!record._timing || fromCache || !record.finished) {
-          return undefined;
+        const origin = URL.getOrigin(record._url);
+        if (!origin || !record._timing || fromCache ||
+            WHITELISTED_STATUS_CODES.includes(record.statusCode) || !record.finished) {
+          return;
+        }
+
+        // Disregard requests with an invalid start time, (H2 request start times are sometimes less
+        // than issue time and even negative which throws off timing)
+        if (record._startTime < record._issueTime) {
+          return;
         }
 
         // Use DevTools' definition of Waiting latency: https://github.com/ChromeDevTools/devtools-frontend/blob/66595b8a73a9c873ea7714205b828866630e9e82/front_end/network/RequestTimingView.js#L164
         const latency = record._timing.receiveHeadersEnd - record._timing.sendEnd;
-
-        return {
+        const latencyInfo = {
           url: record._url,
-          latency: latency.toLocaleString(undefined, {maximumFractionDigits: 2})
+          startTime: record._startTime,
+          origin,
+          latency,
         };
+
+        // Only examine the first request per origin to reduce noisiness from cases like H2 push
+        // where individual request latency may not apply.
+        const existing = firstRequestLatenciesByOrigin.get(origin);
+        if (!existing || latencyInfo.startTime < existing.startTime) {
+          firstRequestLatenciesByOrigin.set(origin, latencyInfo);
+        }
       });
 
-      const latency3gMin = Emulation.settings.TYPICAL_MOBILE_THROTTLING_METRICS.latency - 10;
-      const areLatenciesAll3G = allRequestLatencies.every(val =>
-          val === undefined || val.latency > latency3gMin);
+      let firstRequestLatencies = Array.from(firstRequestLatenciesByOrigin.values());
+      const latency3gMin = Emulation.settings.TYPICAL_MOBILE_THROTTLING_METRICS.targetLatency - 10;
+      const areLatenciesAll3G = firstRequestLatencies.every(val => val.latency > latency3gMin);
+      firstRequestLatencies = firstRequestLatencies.map(item => ({
+        url: item.url,
+        latency: item.latency.toLocaleString(undefined, {maximumFractionDigits: 2})
+      }));
 
       const trace = artifacts.traces[Audit.DEFAULT_PASS];
       return artifacts.requestFirstInteractive(trace).then(firstInteractive => {
@@ -81,33 +104,30 @@ class LoadFastEnough4Pwa extends Audit {
 
         const extendedInfo = {
           formatter: Formatter.SUPPORTED_FORMATS.NULL,
-          value: {areLatenciesAll3G, allRequestLatencies, isFast, timeToFirstInteractive}
+          value: {areLatenciesAll3G, firstRequestLatencies, isFast, timeToFirstInteractive}
         };
-
-        // Filter records that don't have latencies.
-        const recordsWithLatencies = allRequestLatencies.filter(val => val !== undefined);
 
         const details = Audit.makeV2TableDetails([
           {key: 'url', itemType: 'url', text: 'URL'},
           {key: 'latency', itemType: 'text', text: 'Latency (ms)'},
-        ], recordsWithLatencies);
-
-        if (!areLatenciesAll3G) {
-          return {
-            rawValue: false,
-            // eslint-disable-next-line max-len
-            debugString: `First Interactive was found at ${timeToFirstInteractive.toLocaleString()}, however, the network request latencies were not sufficiently realistic, so the performance measurements cannot be trusted.`,
-            extendedInfo,
-            details
-          };
-        }
+        ], firstRequestLatencies);
 
         if (!isFast) {
           return {
             rawValue: false,
             // eslint-disable-next-line max-len
-            debugString: `Under 3G conditions, First Interactive was at ${timeToFirstInteractive.toLocaleString()}. More details in the "Performance" section.`,
+            debugString: `First Interactive was at ${timeToFirstInteractive.toLocaleString()}. More details in the "Performance" section.`,
             extendedInfo
+          };
+        }
+
+        if (!areLatenciesAll3G) {
+          return {
+            rawValue: true,
+            // eslint-disable-next-line max-len
+            debugString: `First Interactive was found at ${timeToFirstInteractive.toLocaleString()}, however, the network request latencies were not sufficiently realistic, so the performance measurements cannot be trusted.`,
+            extendedInfo,
+            details
           };
         }
 

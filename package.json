@@ -1,6 +1,6 @@
 {
   "name": "lighthouse",
-  "version": "2.0.0-alpha.5",
+  "version": "2.0.1-alpha.0",
   "description": "Lighthouse",
   "main": "./lighthouse-core/index.js",
   "bin": {
@@ -11,7 +11,7 @@
     "node": ">=6"
   },
   "scripts": {
-    "install-all": "yarn install-launcher && yarn install-cli && yarn install-extension && yarn install-viewer",
+    "install-all": "yarn && yarn install-launcher && yarn install-cli && yarn install-extension && yarn install-viewer",
     "install-launcher": "cd ./chrome-launcher && yarn install && yarn build",
     "install-cli": "cd ./lighthouse-cli && yarn install && yarn build",
     "install-extension": "cd ./lighthouse-extension && yarn install",
@@ -43,7 +43,7 @@
     "devtools": "bash lighthouse-core/scripts/roll-to-devtools.sh",
     "compile-devtools": "bash lighthouse-core/scripts/compile-against-devtools.sh",
     "watch": "bash lighthouse-core/scripts/run-mocha.sh --watch",
-    "chrome": "node ./lighthouse-cli/manual-chrome-launcher.js",
+    "chrome": "node chrome-launcher/manual-chrome-launcher.js",
     "fast": "yarn start -- --disable-device-emulation --disable-cpu-throttling --disable-network-throttling",
     "smokehouse": "node lighthouse-cli/test/smokehouse/smokehouse.js",
     "deploy-viewer": "cd lighthouse-viewer && gulp deploy"
@@ -68,12 +68,13 @@
     "zone.js": "^0.7.3"
   },
   "dependencies": {
-    "axe-core": "2.2.0",
+    "axe-core": "2.2.1",
     "chrome-devtools-frontend": "1.0.422034",
     "debug": "2.2.0",
     "devtools-timeline-model": "1.1.6",
     "gl-matrix": "2.3.2",
     "handlebars": "4.0.5",
+    "jpeg-js": "0.1.2",
     "json-stringify-safe": "5.0.1",
     "marked": "0.3.6",
     "metaviewport-parser": "0.0.1",
