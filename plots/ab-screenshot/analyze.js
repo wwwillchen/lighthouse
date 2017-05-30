@@ -129,9 +129,7 @@ function getRunDir(sitePath, runIndex) {
 function sortAndFilterRunFolders(folders) {
   return folders
     .filter(folder => folder !== '.DS_Store')
-    .map(folder => Number(folder))
-    .sort((a, b) => a - b)
-    .map(folder => folder.toString());
+    .sort((a, b) => Number(a) - Number(b));
 }
 
 /**

@@ -25,18 +25,19 @@ const mkdirp = require('mkdirp');
 const args = require('yargs')
   .wrap(Math.min(process.stdout.columns, 120))
   .help('help')
-  .usage('node measure.js [options]')
+  .usage('node $0 [options]')
   .example('node $0 -n 3 --sites-path ./sample-sites.json')
   .example('node $0 --site https://google.com/')
   .example('node $0 --subset')
   .describe({
-    'n': 'Number of runs to do per site',
+    'n': 'Number of runs per site',
     'reuse-chrome': 'Reuse the same Chrome instance across all site runs',
-    'keep-first-run': 'By default if you use --reuse-chrome, the first run results are discarded',
+    'keep-first-run': 'If you use --reuse-chrome, by default the first run results are discarded',
   })
   .group(
     ['disable-device-emulation', 'disable-cpu-throttling', 'disable-network-throttling'],
     'Chrome DevTools settings:')
+  .boolean(['disable-device-emulation', 'disable-cpu-throttling', 'disable-network-throttling'])
   .describe({
     'disable-device-emulation': 'Disable Nexus 5X emulation',
     'disable-cpu-throttling': 'Disable CPU throttling',
@@ -48,7 +49,6 @@ const args = require('yargs')
     'subset': 'Measure a subset of popular sites',
     'site': 'Include a specific site url to run',
   })
-  .boolean(['disable-device-emulation', 'disable-cpu-throttling', 'disable-network-throttling'])
   .argv;
 
 const constants = require('./constants.js');
