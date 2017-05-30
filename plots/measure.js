@@ -49,6 +49,7 @@ const args = require('yargs')
     'subset': 'Measure a subset of popular sites',
     'site': 'Include a specific site url to run',
   })
+  .default('sites-path', 'sites.js')
   .argv;
 
 const constants = require('./constants.js');
@@ -59,30 +60,19 @@ const ChromeLauncher = require('../chrome-launcher/chrome-launcher.js');
 const Printer = require('../lighthouse-cli/printer');
 const assetSaver = require('../lighthouse-core/lib/asset-saver.js');
 
-const keepFirstRun = args['keep-first-run'] || !args['reuse-chrome'];
-const numberOfRuns = args['n'] || 3;
+const keepFirstRun = args.keepFirstRun || !args.reuseChrome;
+const numberOfRuns = args.n || 3;
 
 function getUrls() {
-  if (args['site']) {
-    return [args['site']];
+  if (args.site) {
+    return [args.site];
   }
 
-  if (args['sites-path']) {
-    const sitesPath = path.resolve(__dirname, args['sites-path']);
-    if (path.extname(sitesPath) === '.json') {
-      return JSON.parse(fs.readFileSync(sitesPath, 'utf-8'));
-    } else if (path.extname(sitesPath) === '.js') {
-      return eval(fs.readFileSync(sitesPath, 'utf-8'));
-    } else {
-      throw new Error('Must pass a js or json file to --sites-path');
-    }
+  if (args.subset) {
+    return require(path.resolve(__dirname, 'sites_subset.js'));
   }
 
-  if (args['subset']) {
-    return eval(fs.readFileSync(path.resolve(__dirname, 'sites_subset.js'), 'utf-8'));
-  }
-
-  return eval(fs.readFileSync(path.resolve(__dirname, 'sites.js'), 'utf-8'));
+  return require(path.resolve(__dirname, args.sitesPath));
 }
 
 const URLS = getUrls();
@@ -100,7 +90,7 @@ function main() {
     return;
   }
 
-  if (args['reuse-chrome']) {
+  if (args.reuseChrome) {
     ChromeLauncher.launch().then(launcher => {
       return runAnalysisWithExistingChromeInstances(launcher)
         .catch(err => console.error(err))
@@ -199,9 +189,9 @@ function singleRunAnalysis(url, id, launcher, {ignoreRun}) {
 function analyzeWithLighthouse(launcher, url, outputPath, assetsPath, {ignoreRun}) {
   const flags = {
     output: 'json',
-    disableCpuThrottling: ignoreRun ? true : args['disable-cpu-throttling'],
-    disableNetworkThrottling: ignoreRun ? true : args['disable-network-throttling'],
-    disableDeviceEmulation: args['disable-device-emulation'],
+    disableCpuThrottling: ignoreRun ? true : args.disableCpuThrottling,
+    disableNetworkThrottling: ignoreRun ? true : args.disableNetworkThrottling,
+    disableDeviceEmulation: args.disableDeviceEmulation,
     port: launcher.port,
   };
   return lighthouse(url, flags, config)

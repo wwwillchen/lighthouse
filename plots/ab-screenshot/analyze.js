@@ -22,7 +22,7 @@ const path = require('path');
 const opn = require('opn');
 const args = require('yargs').argv;
 
-const runs = args['runs'] || 1;
+const runs = args.runs || 1;
 
 const Metrics = require('../../lighthouse-core/lib/traces/pwmetrics-events');
 

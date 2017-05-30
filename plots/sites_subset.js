@@ -16,8 +16,7 @@
  */
 'use strict';
 
-/* eslint-disable no-unused-expressions */
-[
+module.exports = [
   'https://en.wikipedia.org/wiki/Google',
   'https://mobile.twitter.com/ChromeDevTools',
   'https://www.instagram.com/stephencurry30',

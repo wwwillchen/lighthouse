@@ -16,8 +16,7 @@
  */
 'use strict';
 
-/* eslint-disable no-unused-expressions */
-[
+module.exports = [
   // Flagship sites
   'https://nytimes.com',
   'https://flipkart.com',
