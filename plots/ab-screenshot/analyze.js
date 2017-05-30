@@ -20,9 +20,9 @@ const fs = require('fs');
 const path = require('path');
 
 const opn = require('opn');
-const args = require('yargs').argv;
-
-const runs = args.runs || 1;
+const args = require('yargs')
+  .default('runs', 1)
+  .argv;
 
 const Metrics = require('../../lighthouse-core/lib/traces/pwmetrics-events');
 
@@ -87,7 +87,7 @@ function aggregate(outPathA, outPathB) {
       return;
     }
 
-    for (let i = 0; i < runs; i++) {
+    for (let i = 0; i < args.runs; i++) {
       const runDirA = getRunDir(sitePathA, i);
       const runDirB = getRunDir(sitePathB, i);
 
