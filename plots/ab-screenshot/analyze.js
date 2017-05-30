@@ -22,7 +22,7 @@ const path = require('path');
 const opn = require('opn');
 const args = require('yargs').argv;
 
-const RUNS = args.runs || 1;
+const runs = args['runs'] || 1;
 
 const Metrics = require('../../lighthouse-core/lib/traces/pwmetrics-events');
 
@@ -87,7 +87,7 @@ function aggregate(outPathA, outPathB) {
       return;
     }
 
-    for (let i = 0; i < RUNS; i++) {
+    for (let i = 0; i < runs; i++) {
       const runDirA = getRunDir(sitePathA, i);
       const runDirB = getRunDir(sitePathB, i);
 
@@ -116,9 +116,22 @@ function aggregate(outPathA, outPathB) {
 /**
  * @param {string} sitePath
  * @param {number} runIndex
+ * @return {string}
  */
 function getRunDir(sitePath, runIndex) {
   return sortAndFilterRunFolders(fs.readdirSync(sitePath))[runIndex];
+}
+
+/**
+ * @param {!Array<string>} folders
+ * @return {!Array<string>}
+ */
+function sortAndFilterRunFolders(folders) {
+  return folders
+    .filter(folder => folder !== '.DS_Store')
+    .map(folder => Number(folder))
+    .sort((a, b) => a - b)
+    .map(folder => folder.toString());
 }
 
 /**
@@ -174,18 +187,6 @@ function analyzeSingleRunScreenshots(runPath) {
       .find(metric => metric.id === id)
       .getTs(lighthouseResults.audits) / 1000; // convert to ms
   }
-}
-
-/**
- * @param {!Array<string>} folders
- * @return {!Array<string>}
- */
-function sortAndFilterRunFolders(folders) {
-  return folders
-    .filter(folder => folder !== '.DS_Store')
-    .map(folder => Number(folder))
-    .sort((a, b) => a - b)
-    .map(folder => folder.toString());
 }
 
 /**
