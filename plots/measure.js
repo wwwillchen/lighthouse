@@ -188,7 +188,8 @@ const URLS = getUrls();
 
 function main() {
   if (numberOfRuns === 1 && !keepFirstRun) {
-    console.log('ERROR: You are only doing one run and re-using chrome, but did not specify --keep-first-run');
+    console.log('ERROR: You are only doing one run and re-using chrome');
+    console.log('but did not specify --keep-first-run');
     return;
   }
 
