@@ -59,12 +59,8 @@ const ChromeLauncher = require('../chrome-launcher/chrome-launcher.js');
 const Printer = require('../lighthouse-cli/printer');
 const assetSaver = require('../lighthouse-core/lib/asset-saver.js');
 
-const keepFirstrun = args['keep-first-run'] || !args['reuse-chrome'];
-
-// Running it n + 1 times if the first run is deliberately ignored
-// because it has different perf characteristics from subsequent runs
-// (e.g. DNS cache which can't be easily reset between runs)
-const numberOfRuns = (args['n'] || 3);
+const keepFirstRun = args['keep-first-run'] || !args['reuse-chrome'];
+const numberOfRuns = args['n'] || 3;
 
 const SITES = [
   // Flagship sites
@@ -92,7 +88,6 @@ const SITES = [
   // Also removed sites that don't have significant index pages:
   // "t.co", "popads.net", "onclickads.net", "microsoftonline.com", "onclckds.com", "cnzz.com",
   // "live.com", "adf.ly", "googleusercontent.com",
-
   'https://www.google.com/search?q=flowers',
   'https://youtube.com',
   'https://facebook.com',
@@ -192,7 +187,7 @@ function getUrls() {
 const URLS = getUrls();
 
 function main() {
-  if (numberOfRuns === 1 && !keepFirstrun) {
+  if (numberOfRuns === 1 && !keepFirstRun) {
     console.log('ERROR: You are only doing one run and re-using chrome, but did not specify --keep-first-run');
     return;
   }
@@ -230,11 +225,10 @@ function runAnalysisWithNewChromeInstances() {
 
     const id = i.toString();
     const isFirstRun = i === 0;
-    const ignoreRun = keepFirstrun ? false : isFirstRun;
+    const ignoreRun = keepFirstRun ? false : isFirstRun;
     for (const url of URLS) {
       promise = promise.then(() => {
         return ChromeLauncher.launch().then(launcher => {
-          // TODO: pass in launcher
           return singleRunAnalysis(url, id, launcher, {ignoreRun})
             .catch(err => console.error(err))
             .then(() => launcher.kill());
@@ -249,7 +243,7 @@ function runAnalysisWithNewChromeInstances() {
 /**
  * Reuses existing Chrome instance for all site runs.
  * Returns a promise chain that analyzes all the sites n times.
- * @param {TODO}
+ * @param {!Launcher} launcher
  * @return {!Promise}
  */
 function runAnalysisWithExistingChromeInstances(launcher) {
@@ -261,7 +255,7 @@ function runAnalysisWithExistingChromeInstances(launcher) {
 
     const id = i.toString();
     const isFirstRun = i === 0;
-    const ignoreRun = keepFirstrun ? false : isFirstRun;
+    const ignoreRun = keepFirstRun ? false : isFirstRun;
     for (const url of URLS) {
       promise = promise.then(() => singleRunAnalysis(url, id, launcher, {ignoreRun}));
     }
@@ -273,11 +267,11 @@ function runAnalysisWithExistingChromeInstances(launcher) {
  * Analyzes a site a single time using lighthouse.
  * @param {string} url
  * @param {string} id
- * @param {TODO}
+ * @param {!Launcher} launcher
  * @param {{ignoreRun: boolean}} options
  * @return {!Promise}
  */
-function singleRunAnalysis(url, id, {ignoreRun}) {
+function singleRunAnalysis(url, id, launcher, {ignoreRun}) {
   console.log('Measuring site:', url, 'run:', id);
   const parsedURL = parseURL(url);
   const urlBasedFilename = sanitizeURL(`${parsedURL.host}-${parsedURL.pathname}`);
@@ -293,7 +287,7 @@ function singleRunAnalysis(url, id, {ignoreRun}) {
 /**
  * Runs lighthouse and save the artifacts (not used directly by plots,
  * but may be helpful for debugging outlier runs).
- * @param {TODO}
+ * @param {!Launcher} launcher
  * @param {string} url
  * @param {string} outputPath
  * @param {string} assetsPath
@@ -318,7 +312,7 @@ function analyzeWithLighthouse(launcher, url, outputPath, assetsPath, {ignoreRun
         .saveAssets(lighthouseResults.artifacts, lighthouseResults.audits, assetsPath)
         .then(() => {
           lighthouseResults.artifacts = undefined;
-          return Printer.write(lighthouseResults, FLAGS.output, outputPath);
+          return Printer.write(lighthouseResults, flags.output, outputPath);
         });
     })
     .catch(err => console.error(err));
