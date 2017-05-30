@@ -59,27 +59,12 @@ const ChromeLauncher = require('../chrome-launcher/chrome-launcher.js');
 const Printer = require('../lighthouse-cli/printer');
 const assetSaver = require('../lighthouse-core/lib/asset-saver.js');
 
-const DISABLE_DEVICE_EMULATION = args['disable-device-emulation'];
-const DISABLE_CPU_THROTTLING = args['disable-cpu-throttling'];
-const DISABLE_NETWORK_THROTTLING = args['disable-network-throttling'];
-const REUSE_CHROME = args['reuse-chrome'];
-const KEEP_FIRST_RUN = args['keep-first-run'] || !REUSE_CHROME;
-const SITES_PATH = args['sites-path'];
-const SUBSET = args['subset'];
-const SITE = args['site'];
-const CUSTOM_NUMBER_OF_RUNS = args['n'];
+const keepFirstrun = args['keep-first-run'] || !args['reuse-chrome'];
 
 // Running it n + 1 times if the first run is deliberately ignored
 // because it has different perf characteristics from subsequent runs
 // (e.g. DNS cache which can't be easily reset between runs)
-const NUMBER_OF_RUNS = (CUSTOM_NUMBER_OF_RUNS || 20) + (KEEP_FIRST_RUN ? 0 : 1);
-
-const FLAGS = {
-  output: 'json',
-  disableCpuThrottling: DISABLE_CPU_THROTTLING,
-  disableNetworkThrottling: DISABLE_NETWORK_THROTTLING,
-  disableDeviceEmulation: DISABLE_DEVICE_EMULATION,
-};
+const numberOfRuns = (args['n'] || 3);
 
 const SITES = [
   // Flagship sites
@@ -168,15 +153,15 @@ const SITES = [
 ];
 
 function getUrls() {
-  if (SITES_PATH) {
-    return require(path.resolve(__dirname, SITES_PATH));
+  if (args['sites-path']) {
+    return require(path.resolve(__dirname, args['sites-path']));
   }
 
-  if (SITE) {
-    return [SITE];
+  if (args['site']) {
+    return [args['site']];
   }
 
-  if (SUBSET) {
+  if (args['subset']) {
     return [
       'https://en.wikipedia.org/wiki/Google',
       'https://mobile.twitter.com/ChromeDevTools',
@@ -207,15 +192,20 @@ function getUrls() {
 const URLS = getUrls();
 
 function main() {
+  if (numberOfRuns === 1 && !keepFirstrun) {
+    console.log('ERROR: You are only doing one run and re-using chrome, but did not specify --keep-first-run');
+    return;
+  }
+
   if (utils.isDir(constants.OUT_PATH)) {
     console.log('ERROR: Found output from previous run at: ', constants.OUT_PATH);
     console.log('Please run: npm run clean');
     return;
   }
 
-  if (REUSE_CHROME) {
-    ChromeLauncher.launch({port: 9222}).then(launcher => {
-      return runAnalysisWithExistingChromeInstances()
+  if (args['reuse-chrome']) {
+    ChromeLauncher.launch().then(launcher => {
+      return runAnalysisWithExistingChromeInstances(launcher)
         .catch(err => console.error(err))
         .then(() => launcher.kill());
     });
@@ -235,17 +225,18 @@ main();
 function runAnalysisWithNewChromeInstances() {
   let promise = Promise.resolve();
 
-  for (let i = 0; i < NUMBER_OF_RUNS; i++) {
+  for (let i = 0; i < numberOfRuns; i++) {
     // Averages out any order-dependent effects such as memory pressure
     utils.shuffle(URLS);
 
     const id = i.toString();
     const isFirstRun = i === 0;
-    const ignoreRun = KEEP_FIRST_RUN ? false : isFirstRun;
+    const ignoreRun = keepFirstrun ? false : isFirstRun;
     for (const url of URLS) {
       promise = promise.then(() => {
-        return ChromeLauncher.launch({port: 9222}).then(launcher => {
-          return singleRunAnalysis(url, id, {ignoreRun})
+        return ChromeLauncher.launch().then(launcher => {
+          // TODO: pass in launcher
+          return singleRunAnalysis(url, id, launcher, {ignoreRun})
             .catch(err => console.error(err))
             .then(() => launcher.kill());
         })
@@ -259,20 +250,21 @@ function runAnalysisWithNewChromeInstances() {
 /**
  * Reuses existing Chrome instance for all site runs.
  * Returns a promise chain that analyzes all the sites n times.
+ * @param {TODO}
  * @return {!Promise}
  */
-function runAnalysisWithExistingChromeInstances() {
+function runAnalysisWithExistingChromeInstances(launcher) {
   let promise = Promise.resolve();
 
-  for (let i = 0; i < NUMBER_OF_RUNS; i++) {
+  for (let i = 0; i < numberOfRuns; i++) {
     // Averages out any order-dependent effects such as memory pressure
     utils.shuffle(URLS);
 
     const id = i.toString();
     const isFirstRun = i === 0;
-    const ignoreRun = KEEP_FIRST_RUN ? false : isFirstRun;
+    const ignoreRun = keepFirstrun ? false : isFirstRun;
     for (const url of URLS) {
-      promise = promise.then(() => singleRunAnalysis(url, id, {ignoreRun}));
+      promise = promise.then(() => singleRunAnalysis(url, id, launcher, {ignoreRun}));
     }
   }
   return promise;
@@ -282,6 +274,7 @@ function runAnalysisWithExistingChromeInstances() {
  * Analyzes a site a single time using lighthouse.
  * @param {string} url
  * @param {string} id
+ * @param {TODO}
  * @param {{ignoreRun: boolean}} options
  * @return {!Promise}
  */
@@ -295,20 +288,28 @@ function singleRunAnalysis(url, id, {ignoreRun}) {
   }
   const outputPath = path.resolve(runPath, constants.LIGHTHOUSE_RESULTS_FILENAME);
   const assetsPath = path.resolve(runPath, 'assets');
-  return analyzeWithLighthouse(url, outputPath, assetsPath, {ignoreRun});
+  return analyzeWithLighthouse(launcher, url, outputPath, assetsPath, {ignoreRun});
 }
 
 /**
  * Runs lighthouse and save the artifacts (not used directly by plots,
  * but may be helpful for debugging outlier runs).
+ * @param {TODO}
  * @param {string} url
  * @param {string} outputPath
  * @param {string} assetsPath
  * @param {{ignoreRun: boolean}} options
  * @return {!Promise}
  */
-function analyzeWithLighthouse(url, outputPath, assetsPath, {ignoreRun}) {
-  return lighthouse(url, FLAGS, config)
+function analyzeWithLighthouse(launcher, url, outputPath, assetsPath, {ignoreRun}) {
+  const flags = {
+    output: 'json',
+    disableCpuThrottling: args['disable-cpu-throttling'],
+    disableNetworkThrottling: args['disable-network-throttling'],
+    disableDeviceEmulation: args['disable-device-emulation'],
+    port: launcher.port,
+  };
+  return lighthouse(url, flags, config)
     .then(lighthouseResults => {
       if (ignoreRun) {
         console.log('First load of site. Results not being saved to disk.');

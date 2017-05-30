@@ -17,7 +17,6 @@
 'use strict';
 
 const fs = require('fs');
-const path = require('path');
 
 /**
  * @param {string} path
@@ -53,34 +52,8 @@ function shuffle(array) {
   }
 }
 
-/**
- * @param {string} filePath
- */
-function removeRecursive(filePath) {
-  try {
-    if (fs.existsSync(filePath)) {
-      if (isFile(filePath)) {
-        fs.unlinkSync(filePath);
-        return;
-      }
-      const files = fs.readdirSync(filePath);
-      for (let i = 0; i < files.length; i++) {
-        const childPath = path.resolve(filePath, files[i]);
-        if (isDir(childPath))
-          removeRecursive(childPath);
-        else
-          fs.unlinkSync(childPath);
-      }
-      fs.rmdirSync(filePath);
-    }
-  } catch (error) {
-    throw new Error(`Received an error: [${error}] while trying to remove: ${filePath}`);
-  }
-}
-
 module.exports = {
   isDir,
   isFile,
   shuffle,
-  removeRecursive,
 };
