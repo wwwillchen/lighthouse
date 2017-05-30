@@ -210,9 +210,8 @@ function main() {
         .then(() => launcher.kill());
     });
     return;
-  } else {
-    runAnalysisWithNewChromeInstances();
   }
+  runAnalysisWithNewChromeInstances();
 }
 
 main();
