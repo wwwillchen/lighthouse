@@ -6,20 +6,28 @@
 # Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 ##
 
+echo "Starting plots smoke test"
+
 random_number="$(shuf -i 1-10000 -n 1)";
 
 # paths
 local_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 plots_path="$local_path/.."
 out_path="$plots_path/out"
-out_backup_path="$plots_path/out_backup_$random_number"
-test_out_set_1_path="$plots_path/out_test_google_2_runs_set_1"
+out_backup_folder="out_backup_$random_number"
+out_backup_path="$plots_path/$out_backup_folder"
 
 analyze_script="$plots_path/analyze.js"
 clean_script="$plots_path/clean.js"
 measure_script="$plots_path/measure.js"
 
-mv $out_path $out_backup_path || 0
+if [ -d "$out_path" ]; then
+  mv $out_path $out_backup_path
+  echo "Moved existing plots/out folder to plots/$out_backup_folder"
+fi
+
 node $measure_script --site https://google.com/ -n 2 --disable-network-throttling --disable-cpu-throttling
 node $analyze_script --ci
 node $clean_script
+
+echo "Finished plots smoke test without errors"
