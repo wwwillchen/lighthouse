@@ -33,9 +33,10 @@ const args = require('yargs')
     'reuse-chrome': 'Reuse the same Chrome instance across all site runs',
     'keep-first-run': 'If you use --reuse-chrome, by default the first run results are discarded',
   })
+  .default('n', 3)
   .group(
     ['disable-device-emulation', 'disable-cpu-throttling', 'disable-network-throttling'],
-    'Chrome DevTools settings:')
+    'Lighthouse settings:')
   .boolean(['disable-device-emulation', 'disable-cpu-throttling', 'disable-network-throttling'])
   .describe({
     'disable-device-emulation': 'Disable Nexus 5X emulation',
@@ -60,7 +61,6 @@ const Printer = require('../lighthouse-cli/printer');
 const assetSaver = require('../lighthouse-core/lib/asset-saver.js');
 
 const keepFirstRun = args.keepFirstRun || !args.reuseChrome;
-const numberOfRuns = args.n || 3;
 
 function getUrls() {
   if (args.site) {
@@ -77,7 +77,7 @@ function getUrls() {
 const URLS = getUrls();
 
 function main() {
-  if (numberOfRuns === 1 && !keepFirstRun) {
+  if (args.n === 1 && !keepFirstRun) {
     console.log('ERROR: You are only doing one run and re-using chrome');
     console.log('but did not specify --keep-first-run');
     return;
@@ -110,7 +110,7 @@ main();
 function runAnalysisWithNewChromeInstances() {
   let promise = Promise.resolve();
 
-  for (let i = 0; i < numberOfRuns; i++) {
+  for (let i = 0; i < args.n; i++) {
     // Averages out any order-dependent effects such as memory pressure
     utils.shuffle(URLS);
 
@@ -140,7 +140,7 @@ function runAnalysisWithNewChromeInstances() {
 function runAnalysisWithExistingChromeInstances(launcher) {
   let promise = Promise.resolve();
 
-  for (let i = 0; i < numberOfRuns; i++) {
+  for (let i = 0; i < args.n; i++) {
     // Averages out any order-dependent effects such as memory pressure
     utils.shuffle(URLS);
 

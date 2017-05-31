@@ -14,17 +14,13 @@ You need to build lighthouse first.
 ### Generating & viewing charts
 
 ```
-# View all commands
-$ cd plots
-$ yarn run
-
 # Run lighthouse to collect metrics data
-$ yarn measure
+$ node measure.js
 
 # Analyze the data to generate a summary file (i.e. out/generatedResults.js)
 # This will launch the charts web page in the browser
-$ yarn analyze
+$ node analyze.js
 
 # If you need to view the charts later
-$ yarn open
+$ node open.js
 ```
