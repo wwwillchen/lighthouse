@@ -6,8 +6,6 @@
 # Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 ##
 
-echo "Starting plots smoke test"
-
 random_number="$(shuf -i 1-10000 -n 1)";
 
 # paths
@@ -20,6 +18,8 @@ out_backup_path="$plots_path/$out_backup_folder"
 analyze_script="$plots_path/analyze.js"
 clean_script="$plots_path/clean.js"
 measure_script="$plots_path/measure.js"
+
+echo "Starting plots smoke test"
 
 if [ -d "$out_path" ]; then
   mv $out_path $out_backup_path
