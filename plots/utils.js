@@ -48,7 +48,7 @@ function shuffle(array) {
  */
 function copy(src, dest) {
   try {
-    var targetFilePath = path.resolve(dest, path.basename(src));
+    const targetFilePath = path.resolve(dest, path.basename(src));
     fs.writeFileSync(targetFilePath, fs.readFileSync(src));
   } catch (error) {
     throw new Error(`Received an error: [${error}] while trying to copy: ${src} -> ${dest}`);
@@ -65,17 +65,18 @@ function copyRecursive(src, dest) {
       copy(src, dest);
       return;
     }
-    var targetDirPath = path.resolve(dest, path.basename(src));
-    if (!fs.existsSync(targetDirPath))
+    const targetDirPath = path.resolve(dest, path.basename(src));
+    if (!fs.existsSync(targetDirPath)) {
       fs.mkdirSync(targetDirPath);
+    }
     if (isDir(src)) {
-      var files = fs.readdirSync(src);
-      for (var i = 0; i < files.length; i++) {
-        var childPath = path.resolve(src, files[i]);
+      const files = fs.readdirSync(src);
+      for (let i = 0; i < files.length; i++) {
+        const childPath = path.resolve(src, files[i]);
         if (isDir(childPath)) {
           copyRecursive(childPath, targetDirPath);
         } else {
-          var targetFilePath = path.resolve(targetDirPath, path.basename(childPath));
+          const targetFilePath = path.resolve(targetDirPath, path.basename(childPath));
           fs.writeFileSync(targetFilePath, fs.readFileSync(childPath));
         }
       }
@@ -95,13 +96,14 @@ function removeRecursive(filePath) {
         fs.unlinkSync(filePath);
         return;
       }
-      var files = fs.readdirSync(filePath);
-      for (var i = 0; i < files.length; i++) {
-        var childPath = path.resolve(filePath, files[i]);
-        if (isDir(childPath))
+      const files = fs.readdirSync(filePath);
+      for (let i = 0; i < files.length; i++) {
+        const childPath = path.resolve(filePath, files[i]);
+        if (isDir(childPath)) {
           removeRecursive(childPath);
-        else
+        } else {
           fs.unlinkSync(childPath);
+        }
       }
       fs.rmdirSync(filePath);
     }

@@ -61,7 +61,7 @@ function generateOutPath() {
     return path.resolve(__dirname, args.out);
   }
   const date = new Date().toISOString();
-  return path.resolve(__dirname, `out-${sanitize(date)}`);
+  return path.resolve(__dirname, `out-${date}`);
 }
 
 function getUrls() {
@@ -141,7 +141,6 @@ function runAnalysisWithExistingChromeInstances(launcher) {
     // Averages out any order-dependent effects such as memory pressure
     utils.shuffle(URLS);
 
-    const id = i.toString();
     const isFirstRun = i === 0;
     const ignoreRun = keepFirstRun ? false : isFirstRun;
     for (const url of URLS) {
