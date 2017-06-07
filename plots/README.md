@@ -17,12 +17,10 @@ You need to build lighthouse first.
 # Run lighthouse to collect metrics data
 $ node measure.js
 
-# Analyze the data to generate a summary file (i.e. out/generatedResults.js)
+# Analyze the data to generate a summary file (i.e. out-hello/generatedResults.js)
 # This will launch the charts web page in the browser
-$ node analyze.js
-
-# If you need to view the charts later
-$ node open.js
+# node analyze.js {out_directory}
+$ node analyze.js ./out-hello
 ```
 
 ### Advanced usage

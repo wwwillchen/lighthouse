@@ -18,17 +18,21 @@
 
 const path = require('path');
 
+const CHARTS_FOLDER = 'charts';
 const OUT_PATH = path.resolve(__dirname, 'out');
 const LIGHTHOUSE_RESULTS_FILENAME = 'lighthouse.json';
 const SCREENSHOTS_FILENAME = 'assets-0.screenshots.json';
+const GENERATED_RESULTS_FILENAME = 'generated-results.js';
 
 const TIMING_NAME_MAP = {
   'total': 'Lighthouse Execution'
 };
 
 module.exports = {
+  CHARTS_FOLDER,
   OUT_PATH,
   LIGHTHOUSE_RESULTS_FILENAME,
   SCREENSHOTS_FILENAME,
-  TIMING_NAME_MAP
+  TIMING_NAME_MAP,
+  GENERATED_RESULTS_FILENAME,
 };
