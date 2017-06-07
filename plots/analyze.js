@@ -20,9 +20,6 @@ const fs = require('fs');
 const path = require('path');
 
 const opn = require('opn');
-const args = require('yargs')
-  .boolean('ci')
-  .argv;
 
 const constants = require('./constants');
 const utils = require('./utils');
@@ -48,7 +45,7 @@ function main() {
     GENERATED_RESULTS_PATH,
     `var generatedResults = ${JSON.stringify(generatedResults)}`
   );
-  if (args.ci) {
+  if (process.env.CI) {
     return;
   }
   console.log('Opening the charts web page...');  // eslint-disable-line no-console
