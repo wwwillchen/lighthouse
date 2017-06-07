@@ -1,17 +1,7 @@
 /**
- * Copyright 2017 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license Copyright 2017 Google Inc. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
 'use strict';
 
@@ -21,6 +11,9 @@ const assert = require('assert');
 
 const acceptableTrace = require('../fixtures/traces/progressive-app-m60.json');
 const acceptableDevToolsLog = require('../fixtures/traces/progressive-app-m60.devtools.log.json');
+
+const redirectTrace = require('../fixtures/traces/site-with-redirect.json');
+const redirectDevToolsLog = require('../fixtures/traces/site-with-redirect.devtools.log.json');
 
 function generateNetworkRecords(records, navStart) {
   return records.map(item => {
@@ -46,8 +39,25 @@ describe('Performance: consistently-interactive audit', () => {
 
     return ConsistentlyInteractive.audit(artifacts).then(output => {
       assert.equal(output.score, 99);
-      assert.equal(Math.round(output.rawValue), 1587);
-      assert.equal(output.displayValue, '1,590\xa0ms');
+      assert.equal(Math.round(output.rawValue), 1582);
+      assert.equal(output.displayValue, '1,580\xa0ms');
+    });
+  });
+
+  it('should compute consistently interactive on pages with redirect', () => {
+    const artifacts = Object.assign({
+      traces: {
+        [ConsistentlyInteractive.DEFAULT_PASS]: redirectTrace
+      },
+      devtoolsLogs: {
+        [ConsistentlyInteractive.DEFAULT_PASS]: redirectDevToolsLog
+      },
+    }, Runner.instantiateComputedArtifacts());
+
+    return ConsistentlyInteractive.audit(artifacts).then(output => {
+      assert.equal(output.score, 95);
+      assert.equal(Math.round(output.rawValue), 2712);
+      assert.equal(output.displayValue, '2,710\xa0ms');
     });
   });
 
