@@ -6,30 +6,18 @@
 'use strict';
 
 /* eslint-env browser */
-
-function parseQueryParameters(queryParams) {
-  const params = queryParams.substring(1).split('&');
-  const queryParamsObject = {};
-  for (let i = 0; i < params.length; ++i) {
-    const pair = params[i].split('=');
-    const name = pair.shift();
-    queryParamsObject[name] = pair.join('=');
-  }
-  return queryParamsObject;
-}
-
-const queryParams = parseQueryParameters(window.location.search);
-queryParams.chart = queryParams.chart || './grouped-by-metric.js';
+const queryParams = new URLSearchParams(window.location.search);
+const chartParam = queryParams.get('chart') || './grouped-by-metric.js';
 
 const chartScript = document.createElement('script');
 chartScript.type = 'text/javascript';
-chartScript.src = queryParams.chart;
+chartScript.src = chartParam;
 document.body.appendChild(chartScript);
 
 function createNavLink(name, file) {
   const nav = document.querySelector('#nav');
   const link = document.createElement('a');
-  if (file !== queryParams.chart) {
+  if (file !== chartParam) {
     link.href = `./index.html?chart=${file}`;
   }
   link.appendChild(document.createTextNode(name));
