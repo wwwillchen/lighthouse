@@ -5,8 +5,8 @@
  */
 'use strict';
 
-/* global Plotly, generatedResults */
-/* eslint-env browser */
+  /* global Plotly, generatedResults */
+  /* eslint-env browser */
 
 const IGNORED_METRICS = ['Navigation Start'];
 

@@ -42,7 +42,9 @@ function main() {
     `var generatedResults = ${JSON.stringify(generatedResults)}`
   );
   utils.copyRecursive(path.resolve(__dirname, constants.CHARTS_FOLDER), outPath);
-
+  if (process.env.CI) {
+    return;
+  }
   console.log('Opening the charts web page...');  // eslint-disable-line no-console
   opn(path.resolve(outPath, constants.CHARTS_FOLDER, 'index.html'));
 }
