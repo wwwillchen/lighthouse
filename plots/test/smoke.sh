@@ -29,7 +29,7 @@ if [ -d "$out_path" ]; then
 fi
 
 node $measure_script --site https://google.com/ -n 2 --disable-network-throttling --disable-cpu-throttling
-node $analyze_script --ci
+node $analyze_script
 node $clean_script
 
 echo "Finished plots smoke test without errors"
