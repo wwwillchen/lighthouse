@@ -90,7 +90,7 @@ function main() {
   if (args.reuseChrome) {
     ChromeLauncher.launch().then(launcher => {
       return runAnalysisWithExistingChromeInstances(launcher)
-        .catch(err => console.error(err))
+        .catch(handleError)
         .then(() => launcher.kill());
     });
     return;
@@ -118,14 +118,24 @@ function runAnalysisWithNewChromeInstances() {
       promise = promise.then(() => {
         return ChromeLauncher.launch().then(launcher => {
           return singleRunAnalysis(url, launcher, {ignoreRun})
-            .catch(err => console.error(err))
+            .catch(handleError)
             .then(() => launcher.kill());
         })
-        .catch(err => console.error(err));
+        .catch(handleError);
       });
     }
   }
   return promise;
+}
+
+/**
+ * @param {!Error} error
+ */
+function handleError(error) {
+  console.error(error);
+  if (process.env.CI) {
+    process.exit(1);
+  }
 }
 
 /**
@@ -202,7 +212,7 @@ function analyzeWithLighthouse(launcher, url, outputPath, assetsPath, {ignoreRun
           return Printer.write(lighthouseResults, flags.output, outputPath);
         });
     })
-    .catch(err => console.error(err));
+    .catch(handleError);
 }
 
 /**
