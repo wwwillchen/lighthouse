@@ -6,24 +6,43 @@
 'use strict';
 
 /* eslint-env browser */
-const queryParams = new URLSearchParams(window.location.search);
-const chartParam = queryParams.get('chart') || './grouped-by-metric.js';
 
-const chartScript = document.createElement('script');
-chartScript.type = 'text/javascript';
-chartScript.src = chartParam;
-document.body.appendChild(chartScript);
+const CHART_TYPES = {
+  'grouped-by-metric': {
+    name: 'Gouped by metric',
+    chartFunctionNames: ['generateBoxPlotChartPerMetric', 'generateLinePlotChartPerMetric'],
+  },
+  'grouped-by-site': {
+    name: 'Gouped by site',
+    chartFunctionNames: ['generateBloxPlotPerSite'],
+  },
+  'runs-by-site': {
+    name: 'Runs by site',
+    chartFunctionNames: ['generateGroupedBarChart'],
+  },
+};
 
-function createNavLink(name, file) {
+const DEFAULT_SLUG = 'grouped-by-metric';
+
+function createNavLink(name, slug, currentSlug) {
   const nav = document.querySelector('#nav');
   const link = document.createElement('a');
-  if (file !== chartParam) {
-    link.href = `./index.html?chart=${file}`;
+  if (slug !== currentSlug) {
+    link.href = `./index.html?chart=${slug}`;
   }
   link.appendChild(document.createTextNode(name));
   nav.appendChild(link);
 }
 
-createNavLink('Grouped by metric', './grouped-by-metric.js');
-createNavLink('Metrics per site', './metrics-per-site.js');
-createNavLink('Bars per site', './bars-per-site.js');
+(function main () {
+  const queryParams = new URLSearchParams(window.location.search);
+  const chartSlug = queryParams.get('chart') || 'grouped-by-metric';
+
+  for (let key in CHART_TYPES) {
+    createNavLink(CHART_TYPES[key].name, key, chartSlug);
+  }
+
+  for (const functionName of CHART_TYPES[chartSlug].chartFunctionNames) {
+    window[functionName]();
+  }
+})();

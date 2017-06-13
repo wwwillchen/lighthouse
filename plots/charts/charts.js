@@ -8,7 +8,9 @@
 /* global Plotly, generatedResults */
 /* eslint-env browser */
 
-const IGNORED_METRICS = ['Navigation Start'];
+const IGNORED_METRICS = new Set(['Navigation Start']);
+
+const metrics = Object.keys(generatedResults).filter(metric => !IGNORED_METRICS.has(metric));
 
 let elementId = 1;
 
@@ -34,6 +36,15 @@ function renderPlots() {
   });
 }
 
+
+function createChartElement(height = 800) {
+  const div = document.createElement('div');
+  div.style = `width: 100%; height: ${height}px`;
+  div.id = 'chart' + elementId++;
+  document.body.appendChild(div);
+  return div.id;
+}
+
 /**
  * Generates a blox plot chart for each performance metric.
  * If there's a lot of sites, it renders them in separate charts
@@ -41,7 +52,7 @@ function renderPlots() {
  */
 function generateBoxPlotChartPerMetric() {
   for (const metric in generatedResults) {
-    if (IGNORED_METRICS.indexOf(metric) !== -1) {
+    if (IGNORED_METRICS.has(metric)) {
       continue;
     }
     generateBoxPlotChartByBatch({metric, type: 'timing'});
@@ -98,7 +109,7 @@ function generateBoxPlotChartPerMetric() {
  */
 function generateLinePlotChartPerMetric() {
   for (const metric in generatedResults) {
-    if (IGNORED_METRICS.indexOf(metric) !== -1) {
+    if (IGNORED_METRICS.has(metric)) {
       continue;
     }
     generateLinePlotByBatch({metric, type: 'timing'});
@@ -134,13 +145,63 @@ function generateLinePlotChartPerMetric() {
   }
 }
 
-function createChartElement(height = 800) {
-  const div = document.createElement('div');
-  div.style = `width: 100%; height: ${height}px`;
-  div.id = 'chart' + elementId++;
-  document.body.appendChild(div);
-  return div.id;
+function generateBloxPlotPerSite() {
+  const sitesCount = metrics.reduce(
+    (acc, metric) => Math.max(acc, generatedResults[metric].length), 0);
+  for (let i = 0; i < sitesCount; i++) {
+    const data = metrics
+      .map(metric => ({
+        x: generatedResults[metric][i].metrics.map(m => m ? m.timing : null),
+        name: metric,
+        type: 'box',
+        boxpoints: 'all',
+        jitter: 0.9,
+        pointpos: -2,
+        hoverinfo: 'x+name'
+      }))
+      .reverse(); // see: https://github.com/plotly/plotly.js/issues/1187
+
+    const layout = {
+      xaxis: {
+        rangemode: 'tozero'
+      },
+      legend: {
+        traceorder: 'reversed'
+      },
+      title: generatedResults[metrics[0]][i].site,
+      margin: {
+        l: 250
+      }
+    };
+    enqueuePlot(_ => {
+      Plotly.newPlot(createChartElement(), data, layout);
+    });
+  }
 }
 
-generateBoxPlotChartPerMetric();
-generateLinePlotChartPerMetric();
+
+function generateGroupedBarChart() {
+  const sitesCount = metrics.reduce(
+    (acc, metric) => Math.max(acc, generatedResults[metric].length),
+    0
+  );
+  for (let i = 0; i < sitesCount; i++) {
+    const data = metrics.map(metric => ({
+      y: generatedResults[metric][i].metrics.map(m => m ? m.timing : null),
+      name: metric,
+      type: 'bar'
+    }));
+
+    const layout = {
+      yaxis: {
+        rangemode: 'tozero'
+      },
+      hovermode: 'closest',
+      barmode: 'group',
+      title: generatedResults[metrics[0]][i].site
+    };
+    enqueuePlot(_ => {
+      Plotly.newPlot(createChartElement(), data, layout);
+    });
+  }
+}

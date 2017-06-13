@@ -28,7 +28,8 @@ const outPath = path.resolve(__dirname, outFolder);
  */
 function main() {
   const allResults = [];
-  utils.removeRecursive(path.resolve(outPath, constants.CHARTS_FOLDER));
+  // rimraf.sync(path.resolve(outPath, constants.CHARTS_FOLDER));
+  // utils.removeRecursive(path.resolve(outPath, constants.CHARTS_FOLDER));
   fs.readdirSync(outPath).forEach(siteDir => {
     const sitePath = path.resolve(outPath, siteDir);
     if (!utils.isDir(sitePath)) {
@@ -41,7 +42,7 @@ function main() {
     path.resolve(outPath, constants.GENERATED_RESULTS_FILENAME),
     `var generatedResults = ${JSON.stringify(generatedResults)}`
   );
-  utils.copyRecursive(path.resolve(__dirname, constants.CHARTS_FOLDER), outPath);
+  utils.copy(path.resolve(__dirname, constants.CHARTS_FOLDER), outPath);
 
   if (process.env.CI) {
     return;
@@ -60,7 +61,7 @@ main();
 function analyzeSite(sitePath) {
   console.log('Analyzing', sitePath); // eslint-disable-line no-console
   const runResults = [];
-  fs.readdirSync(sitePath).sort().forEach(runDir => {
+  fs.readdirSync(sitePath).sort((a, b) => a.localeCompare(b)).forEach(runDir => {
     const resultsPath = path.resolve(sitePath, runDir, constants.LIGHTHOUSE_RESULTS_FILENAME);
     if (!utils.isFile(resultsPath)) {
       return;

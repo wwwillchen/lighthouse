@@ -44,7 +44,7 @@ const args = require('yargs')
 
 const constants = require('./constants.js');
 const utils = require('./utils.js');
-const config = require('../lighthouse-core/config/plots.json');
+const config = require('../lighthouse-core/config/plots-config.js');
 const lighthouse = require('../lighthouse-core/index.js');
 const ChromeLauncher = require('../chrome-launcher/chrome-launcher.js');
 const Printer = require('../lighthouse-cli/printer');
