@@ -61,7 +61,7 @@ function generateOutPath() {
     return path.resolve(__dirname, args.out);
   }
   const date = new Date().toISOString();
-  return path.resolve(__dirname, `out-${date}`);
+  return path.resolve(__dirname, `out-${sanitize(date)}`);
 }
 
 function getUrls() {
@@ -168,7 +168,7 @@ function runAnalysisWithExistingChromeInstances(launcher) {
  * @return {!Promise}
  */
 function singleRunAnalysis(url, launcher, {ignoreRun}) {
-  const id = new Date().toISOString();
+  const id = sanitize(new Date().toISOString());
   console.log('Measuring site:', url, 'run:', id);
   const parsedURL = parseURL(url);
   const urlBasedFilename = sanitize(`${parsedURL.host}-${parsedURL.pathname}`);
