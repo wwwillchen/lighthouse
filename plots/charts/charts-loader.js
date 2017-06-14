@@ -6,29 +6,30 @@
 'use strict';
 
 /* eslint-env browser */
+/* global generateBoxPlotChartPerMetric, generateLinePlotChartPerMetric, generateBloxPlotPerSite, generateGroupedBarChart */
 
 const CHART_TYPES = {
-  'grouped-by-metric': {
-    name: 'Gouped by metric',
-    chartFunctionNames: ['generateBoxPlotChartPerMetric', 'generateLinePlotChartPerMetric'],
+  'by-metric': {
+    name: 'Group by metric',
+    initFunctions: [generateBoxPlotChartPerMetric, generateLinePlotChartPerMetric],
   },
-  'grouped-by-site': {
-    name: 'Gouped by site',
-    chartFunctionNames: ['generateBloxPlotPerSite'],
+  'by-site': {
+    name: 'Group by site',
+    initFunctions: [generateBloxPlotPerSite],
   },
-  'runs-by-site': {
-    name: 'Runs by site',
-    chartFunctionNames: ['generateGroupedBarChart'],
+  'by-site-bars': {
+    name: 'Group by site (bars)',
+    initFunctions: [generateGroupedBarChart],
   },
 };
 
-const DEFAULT_SLUG = 'grouped-by-metric';
+const DEFAULT_SLUG = 'by-metric';
 
 function createNavLink(name, slug, currentSlug) {
   const nav = document.querySelector('#nav');
   const link = document.createElement('a');
   if (slug !== currentSlug) {
-    link.href = `./index.html?chart=${slug}`;
+    link.href = `./index.html?${slug}`;
   }
   link.appendChild(document.createTextNode(name));
   nav.appendChild(link);
@@ -36,13 +37,13 @@ function createNavLink(name, slug, currentSlug) {
 
 (function main() {
   const queryParams = new URLSearchParams(window.location.search);
-  const chartSlug = queryParams.get('chart') || DEFAULT_SLUG;
+  const chartSlug = [...queryParams.keys()].pop() || DEFAULT_SLUG;
 
   for (const key of Object.keys(CHART_TYPES)) {
     createNavLink(CHART_TYPES[key].name, key, chartSlug);
   }
 
-  for (const functionName of CHART_TYPES[chartSlug].chartFunctionNames) {
-    window[functionName]();
+  for (const fn of CHART_TYPES[chartSlug].initFunctions) {
+    fn();
   }
 })();
