@@ -7,6 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const util = require('util');
 
 const opn = require('opn');
 const args = require('yargs')
@@ -68,7 +69,8 @@ function analyzeSite(sitePath) {
       return;
     }
     const metrics = readResult(resultsPath);
-    console.log(`Metric for ${runDir}: ${JSON.stringify(metrics)}`); // eslint-disable-line no-console
+    const prettymetrics = util.inspect(metrics, {colors: true, breakLength: Infinity});
+    console.log(`Metrics for ${runDir}:`, prettymetrics); // eslint-disable-line no-console
     runResults.push({
       runId: runDir,
       metrics
