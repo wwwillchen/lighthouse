@@ -20,7 +20,7 @@ $ node measure.js
 # OR if you want to specify an out directory
 $ node measure.js --out out-123
 
-# Analyze the data to generate a summary file (i.e. out-hello/generatedResults.js)
+# Analyze the data to generate a summary file (i.e. out-hello/generated-results.js)
 # This will launch the charts web page in the browser
 # node analyze.js {out_directory}
 $ node analyze.js ./out-hello
@@ -29,7 +29,9 @@ $ node analyze.js ./out-hello
 ### Advanced usage
 
 ```
-$ node measure.js [options]
+$ node measure.js --help
+
+node measure.js [options]
 
 Lighthouse settings:
   --disable-device-emulation    Disable Nexus 5X emulation                                                     [boolean]
