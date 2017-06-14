@@ -8,7 +8,7 @@
 const path = require('path');
 
 const CHARTS_FOLDER = 'charts';
-const CHARTS_HTML_FILENAME = 'charts.html';
+const CHARTS_HTML_FILENAME = 'index.html';
 const CHARTS_JS_FILENAME = 'charts.js';
 const CHARTS_LOADER_FILENAME = 'charts-loader.js';
 

@@ -50,7 +50,7 @@ function main() {
     return;
   }
   console.log('Opening the charts web page...');  // eslint-disable-line no-console
-  opn(path.resolve(outPath, constants.CHARTS_FOLDER, 'index.html'));
+  opn(path.resolve(outPath, constants.CHARTS_HTML_FILENAME));
 }
 
 main();
