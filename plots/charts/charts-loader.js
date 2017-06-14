@@ -6,7 +6,7 @@
 'use strict';
 
 /* eslint-env browser */
-/* global generateBoxPlotChartPerMetric, generateLinePlotChartPerMetric, generateBloxPlotPerSite, generateGroupedBarChart */
+/* global generateBoxPlotChartPerMetric, generateLinePlotChartPerMetric, generateBoxPlotPerSite, generateGroupedBarChart */
 
 const CHART_TYPES = {
   'by-metric': {
@@ -15,7 +15,7 @@ const CHART_TYPES = {
   },
   'by-site': {
     name: 'Group by site',
-    initFunctions: [generateBloxPlotPerSite],
+    initFunctions: [generateBoxPlotPerSite],
   },
   'by-site-bars': {
     name: 'Group by site (bars)',

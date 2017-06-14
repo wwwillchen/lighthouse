@@ -148,7 +148,7 @@ function generateLinePlotChartPerMetric() {
 }
 
 // eslint-disable-next-line no-unused-vars
-function generateBloxPlotPerSite() {
+function generateBoxPlotPerSite() {
   const sitesCount = metrics.reduce(
     (acc, metric) => Math.max(acc, generatedResults[metric].length), 0);
   for (let i = 0; i < sitesCount; i++) {
