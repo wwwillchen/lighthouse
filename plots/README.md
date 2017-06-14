@@ -17,6 +17,9 @@ You need to build lighthouse first.
 # Run lighthouse to collect metrics data
 $ node measure.js
 
+# OR if you want to specify an out directory
+$ node measure.js --out out-123
+
 # Analyze the data to generate a summary file (i.e. out-hello/generatedResults.js)
 # This will launch the charts web page in the browser
 # node analyze.js {out_directory}
@@ -26,9 +29,7 @@ $ node analyze.js ./out-hello
 ### Advanced usage
 
 ```
-$ node measure.js --help
-
-node measure.js [options]
+$ node measure.js [options]
 
 Lighthouse settings:
   --disable-device-emulation    Disable Nexus 5X emulation                                                     [boolean]
@@ -42,6 +43,7 @@ Options to specify sites:
 
 Options:
   --help            Show help                                                                                  [boolean]
+  --out             Custom out path
   -n                Number of runs per site                                                                 [default: 3]
   --reuse-chrome    Reuse the same Chrome instance across all site runs
   --keep-first-run  If you use --reuse-chrome, by default the first run results are discarded
@@ -50,5 +52,4 @@ Examples:
   node measure.js -n 3 --sites-path ./sample-sites.json
   node measure.js --site https://google.com/
   node measure.js --subset
-
 ```

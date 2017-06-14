@@ -42,7 +42,9 @@ function main() {
     path.resolve(outPath, constants.GENERATED_RESULTS_FILENAME),
     `var generatedResults = ${JSON.stringify(generatedResults)}`
   );
-  utils.copy(path.resolve(__dirname, constants.CHARTS_FOLDER), outPath);
+  utils.copy(path.resolve(__dirname, constants.CHARTS_FOLDER, constants.CHARTS_HTML_FILENAME), outPath);
+  utils.copy(path.resolve(__dirname, constants.CHARTS_FOLDER, constants.CHARTS_JS_FILENAME), outPath);
+  utils.copy(path.resolve(__dirname, constants.CHARTS_FOLDER, constants.CHARTS_LOADER_FILENAME), outPath);
 
   if (process.env.CI) {
     return;
