@@ -28,8 +28,6 @@ const outPath = path.resolve(__dirname, outFolder);
  */
 function main() {
   const allResults = [];
-  // rimraf.sync(path.resolve(outPath, constants.CHARTS_FOLDER));
-  // utils.removeRecursive(path.resolve(outPath, constants.CHARTS_FOLDER));
   fs.readdirSync(outPath).forEach(siteDir => {
     const sitePath = path.resolve(outPath, siteDir);
     if (!utils.isDir(sitePath)) {
