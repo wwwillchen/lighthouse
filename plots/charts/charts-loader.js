@@ -34,11 +34,11 @@ function createNavLink(name, slug, currentSlug) {
   nav.appendChild(link);
 }
 
-(function main () {
+(function main() {
   const queryParams = new URLSearchParams(window.location.search);
-  const chartSlug = queryParams.get('chart') || 'grouped-by-metric';
+  const chartSlug = queryParams.get('chart') || DEFAULT_SLUG;
 
-  for (let key in CHART_TYPES) {
+  for (const key of Object.keys(CHART_TYPES)) {
     createNavLink(CHART_TYPES[key].name, key, chartSlug);
   }
 

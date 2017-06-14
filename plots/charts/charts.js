@@ -50,6 +50,7 @@ function createChartElement(height = 800) {
  * If there's a lot of sites, it renders them in separate charts
  * otherwise it's too hard to read the chart.
  */
+// eslint-disable-next-line no-unused-vars
 function generateBoxPlotChartPerMetric() {
   for (const metric in generatedResults) {
     if (IGNORED_METRICS.has(metric)) {
@@ -107,6 +108,7 @@ function generateBoxPlotChartPerMetric() {
  * If there's a lot of sites, it renders them in separate charts
  * otherwise it's too hard to read the chart.
  */
+// eslint-disable-next-line no-unused-vars
 function generateLinePlotChartPerMetric() {
   for (const metric in generatedResults) {
     if (IGNORED_METRICS.has(metric)) {
@@ -145,6 +147,7 @@ function generateLinePlotChartPerMetric() {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 function generateBloxPlotPerSite() {
   const sitesCount = metrics.reduce(
     (acc, metric) => Math.max(acc, generatedResults[metric].length), 0);
@@ -179,7 +182,7 @@ function generateBloxPlotPerSite() {
   }
 }
 
-
+// eslint-disable-next-line no-unused-vars
 function generateGroupedBarChart() {
   const sitesCount = metrics.reduce(
     (acc, metric) => Math.max(acc, generatedResults[metric].length),
