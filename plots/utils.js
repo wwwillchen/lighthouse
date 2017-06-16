@@ -55,67 +55,9 @@ function copy(src, dest) {
   }
 }
 
-/**
- * @param {string} src
- * @param {string} dest
- */
-function copyRecursive(src, dest) {
-  try {
-    if (isFile(src)) {
-      copy(src, dest);
-      return;
-    }
-    const targetDirPath = path.resolve(dest, path.basename(src));
-    if (!fs.existsSync(targetDirPath)) {
-      fs.mkdirSync(targetDirPath);
-    }
-    if (isDir(src)) {
-      const files = fs.readdirSync(src);
-      for (let i = 0; i < files.length; i++) {
-        const childPath = path.resolve(src, files[i]);
-        if (isDir(childPath)) {
-          copyRecursive(childPath, targetDirPath);
-        } else {
-          const targetFilePath = path.resolve(targetDirPath, path.basename(childPath));
-          fs.writeFileSync(targetFilePath, fs.readFileSync(childPath));
-        }
-      }
-    }
-  } catch (error) {
-    throw new Error(`Received an error: [${error}] while trying to copy: ${src} -> ${dest}`);
-  }
-}
-
-/**
- * @param {string} filePath
- */
-function removeRecursive(filePath) {
-  try {
-    if (fs.existsSync(filePath)) {
-      if (isFile(filePath)) {
-        fs.unlinkSync(filePath);
-        return;
-      }
-      const files = fs.readdirSync(filePath);
-      for (let i = 0; i < files.length; i++) {
-        const childPath = path.resolve(filePath, files[i]);
-        if (isDir(childPath)) {
-          removeRecursive(childPath);
-        } else {
-          fs.unlinkSync(childPath);
-        }
-      }
-      fs.rmdirSync(filePath);
-    }
-  } catch (error) {
-    throw new Error(`Received an error: [${error}] while trying to remove: ${filePath}`);
-  }
-}
-
 module.exports = {
   isDir,
   isFile,
   shuffle,
-  copyRecursive,
-  removeRecursive,
+  copy,
 };

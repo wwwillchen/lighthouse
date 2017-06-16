@@ -25,6 +25,8 @@ class TraceOfTab extends ComputedArtifact {
   }
 
   /**
+   * Finds key trace events, identifies main process/thread, and returns timings of trace events
+   * in milliseconds since navigation start in addition to the standard microsecond monotonic timestamps.
    * @param {{traceEvents: !Array}} trace
    * @return {!TraceOfTabArtifact}
   */
@@ -107,8 +109,8 @@ class TraceOfTab extends ComputedArtifact {
     const timestamps = {};
 
     Object.keys(metrics).forEach(metric => {
-      timestamps[metric] = metrics[metric] && metrics[metric].ts / 1000;
-      timings[metric] = timestamps[metric] - timestamps.navigationStart;
+      timestamps[metric] = metrics[metric] && metrics[metric].ts;
+      timings[metric] = (timestamps[metric] - navigationStart.ts) / 1000;
     });
 
     return {

@@ -8,6 +8,10 @@
 const path = require('path');
 
 const CHARTS_FOLDER = 'charts';
+const CHARTS_HTML_FILENAME = 'index.html';
+const CHARTS_JS_FILENAME = 'charts.js';
+const CHARTS_LOADER_FILENAME = 'charts-loader.js';
+
 const OUT_PATH = path.resolve(__dirname, 'out');
 const LIGHTHOUSE_RESULTS_FILENAME = 'lighthouse.json';
 const SCREENSHOTS_FILENAME = 'assets-0.screenshots.json';
@@ -19,6 +23,9 @@ const TIMING_NAME_MAP = {
 
 module.exports = {
   CHARTS_FOLDER,
+  CHARTS_HTML_FILENAME,
+  CHARTS_JS_FILENAME,
+  CHARTS_LOADER_FILENAME,
   OUT_PATH,
   LIGHTHOUSE_RESULTS_FILENAME,
   SCREENSHOTS_FILENAME,

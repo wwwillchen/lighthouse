@@ -7,6 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const util = require('util');
 
 const opn = require('opn');
 const args = require('yargs')
@@ -28,7 +29,6 @@ const outPath = path.resolve(__dirname, outFolder);
  */
 function main() {
   const allResults = [];
-  utils.removeRecursive(path.resolve(outPath, constants.CHARTS_FOLDER));
   fs.readdirSync(outPath).forEach(siteDir => {
     const sitePath = path.resolve(outPath, siteDir);
     if (!utils.isDir(sitePath)) {
@@ -41,12 +41,16 @@ function main() {
     path.resolve(outPath, constants.GENERATED_RESULTS_FILENAME),
     `var generatedResults = ${JSON.stringify(generatedResults)}`
   );
-  utils.copyRecursive(path.resolve(__dirname, constants.CHARTS_FOLDER), outPath);
+  const chartsPath = path.resolve(__dirname, constants.CHARTS_FOLDER);
+  utils.copy(path.resolve(chartsPath, constants.CHARTS_HTML_FILENAME), outPath);
+  utils.copy(path.resolve(chartsPath, constants.CHARTS_JS_FILENAME), outPath);
+  utils.copy(path.resolve(chartsPath, constants.CHARTS_LOADER_FILENAME), outPath);
+
   if (process.env.CI) {
     return;
   }
   console.log('Opening the charts web page...');  // eslint-disable-line no-console
-  opn(path.resolve(outPath, constants.CHARTS_FOLDER, 'index.html'));
+  opn(path.resolve(outPath, constants.CHARTS_HTML_FILENAME));
 }
 
 main();
@@ -59,13 +63,14 @@ main();
 function analyzeSite(sitePath) {
   console.log('Analyzing', sitePath); // eslint-disable-line no-console
   const runResults = [];
-  fs.readdirSync(sitePath).sort().forEach(runDir => {
+  fs.readdirSync(sitePath).sort((a, b) => a.localeCompare(b)).forEach(runDir => {
     const resultsPath = path.resolve(sitePath, runDir, constants.LIGHTHOUSE_RESULTS_FILENAME);
     if (!utils.isFile(resultsPath)) {
       return;
     }
     const metrics = readResult(resultsPath);
-    console.log(`Metric for ${runDir}: ${JSON.stringify(metrics)}`); // eslint-disable-line no-console
+    const prettymetrics = util.inspect(metrics, {colors: true, breakLength: Infinity});
+    console.log(`Metrics for ${runDir}:`, prettymetrics); // eslint-disable-line no-console
     runResults.push({
       runId: runDir,
       metrics

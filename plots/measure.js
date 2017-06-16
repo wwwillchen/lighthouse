@@ -44,7 +44,7 @@ const args = require('yargs')
 
 const constants = require('./constants.js');
 const utils = require('./utils.js');
-const config = require('../lighthouse-core/config/plots.json');
+const config = require('../lighthouse-core/config/plots-config.js');
 const lighthouse = require('../lighthouse-core/index.js');
 const ChromeLauncher = require('../chrome-launcher/chrome-launcher.js');
 const Printer = require('../lighthouse-cli/printer');
@@ -61,7 +61,7 @@ function generateOutPath() {
     return path.resolve(__dirname, args.out);
   }
   const date = new Date().toISOString();
-  return path.resolve(__dirname, `out-${date}`);
+  return path.resolve(__dirname, `out-${sanitize(date)}`);
 }
 
 function getUrls() {
@@ -90,7 +90,7 @@ function main() {
   if (args.reuseChrome) {
     ChromeLauncher.launch().then(launcher => {
       return runAnalysisWithExistingChromeInstances(launcher)
-        .catch(err => console.error(err))
+        .catch(handleError)
         .then(() => launcher.kill());
     });
     return;
@@ -118,14 +118,24 @@ function runAnalysisWithNewChromeInstances() {
       promise = promise.then(() => {
         return ChromeLauncher.launch().then(launcher => {
           return singleRunAnalysis(url, launcher, {ignoreRun})
-            .catch(err => console.error(err))
+            .catch(handleError)
             .then(() => launcher.kill());
         })
-        .catch(err => console.error(err));
+        .catch(handleError);
       });
     }
   }
   return promise;
+}
+
+/**
+ * @param {!Error} error
+ */
+function handleError(error) {
+  console.error(error);
+  if (process.env.CI) {
+    process.exit(1);
+  }
 }
 
 /**
@@ -158,7 +168,7 @@ function runAnalysisWithExistingChromeInstances(launcher) {
  * @return {!Promise}
  */
 function singleRunAnalysis(url, launcher, {ignoreRun}) {
-  const id = new Date().toISOString();
+  const id = sanitize(new Date().toISOString());
   console.log('Measuring site:', url, 'run:', id);
   const parsedURL = parseURL(url);
   const urlBasedFilename = sanitize(`${parsedURL.host}-${parsedURL.pathname}`);
@@ -202,7 +212,7 @@ function analyzeWithLighthouse(launcher, url, outputPath, assetsPath, {ignoreRun
           return Printer.write(lighthouseResults, flags.output, outputPath);
         });
     })
-    .catch(err => console.error(err));
+    .catch(handleError);
 }
 
 /**
