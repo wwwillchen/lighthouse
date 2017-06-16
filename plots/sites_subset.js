@@ -13,17 +13,17 @@ module.exports = [
   'https://nytimes.com',
   'https://www.google.com/search?q=flowers',
 
-  // 'https://flipkart.com',
-  // 'http://www.espn.com/',
-  // 'https://www.washingtonpost.com/pwa/',
-  // 'http://www.npr.org/',
-  // 'http://www.booking.com/',
-  // 'https://youtube.com',
-  // 'https://reddit.com',
-  // 'https://ebay.com',
-  // 'https://stackoverflow.com',
-  // 'https://apple.com',
+  'https://flipkart.com',
+  'http://www.espn.com/',
+  'https://www.washingtonpost.com/pwa/',
+  'http://www.npr.org/',
+  'http://www.booking.com/',
+  'https://youtube.com',
+  'https://reddit.com',
+  'https://ebay.com',
+  'https://stackoverflow.com',
+  'https://apple.com',
 
-  // // Could not run nasa on gin3g
-  // 'https://www.nasa.gov/',
+  // Could not run nasa on gin3g
+  'https://www.nasa.gov/',
 ];
