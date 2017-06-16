@@ -8,6 +8,7 @@ const childProcess = require('child_process');
 const fs = require("fs");
 const path = require("path");
 
+const opn = require('opn');
 const args = require("yargs")
   .describe({
     input: "path to artifacts from measure.js (pass in comma separated list)",
@@ -35,6 +36,7 @@ function main() {
     fs.mkdirSync(constants.OUT_PATH);
   }
   fs.writeFileSync(path.resolve(constants.OUT_PATH, 'dashboard-results.js'), `const dashboardResults = ${JSON.stringify(results, undefined, 2)}`);
+  opn(path.resolve(__dirname, 'dashboard', 'index.html'));
 }
 
 main();

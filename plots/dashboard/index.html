@@ -17,16 +17,22 @@
             </span>
             <span class="select-metric">
                 Number of points:
-                <select class="dth-select">
+                <select class="dth-select" id="select-number-of-points">
                     <option checked="">All</option>
                     <option checked="">5</option>
                     <option checked="">10</option>
                     <option checked="">15</option>
                 </select>
             </span>
+            <span class="notes">
+                <span>Error bands represent 80%ile and 20%ile</span>
+                <span>Note: null results are treated as 0</span>
+            </span>
         </nav>
+
+        <div id="charts">
+        </div>
         <script src="../out/dashboard-results.js"></script>
         <script src="./dashboard.js"></script>
-        <div id="charts"></div>
     </body>
 </html>

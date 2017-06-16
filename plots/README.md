@@ -21,6 +21,9 @@ $ node measure.js
 # This will launch the charts web page in the browser
 # node analyze.js {out_directory}
 $ node analyze.js ./out-hello
+
+# Generate dashboard for multiple batch results
+$ node generate-dashboard.js --input-root ./out-examples
 ```
 
 ### Advanced usage
