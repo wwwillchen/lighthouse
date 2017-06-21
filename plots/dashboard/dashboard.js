@@ -23,6 +23,7 @@ function enqueuePlot(fn) {
     renderPlots();
   }
 }
+
 function renderPlots() {
   window.requestAnimationFrame(_ => {
     const plotFn = queuedPlots.shift();
@@ -33,30 +34,11 @@ function renderPlots() {
   });
 }
 
-const groupedByMetrics = Object.keys(
-  dashboardResults
-).reduce((acc, batchId) => {
-  const batchResults = dashboardResults[batchId];
-  Object.keys(batchResults).forEach(metricId => {
-    if (!acc[metricId]) {
-      acc[metricId] = {};
-    }
-    const sites = batchResults[metricId];
-    sites.forEach(site => {
-      if (!acc[metricId][site.site]) {
-        acc[metricId][site.site] = {};
-      }
-      acc[metricId][site.site][batchId] = site.metrics;
-    });
-  });
-  return acc;
-}, {});
-
 let currentMetric;
 let numberOfPoints = 0;
 
 function main() {
-  const metrics = Object.keys(groupedByMetrics).filter(
+  const metrics = Object.keys(dashboardResults).filter(
     m => m !== "Navigation Start"
   );
 
@@ -103,7 +85,7 @@ function onSelectMetric(event) {
 
 function generateChartsForMetric() {
   const metric = currentMetric;
-  for (const [name, site] of Object.entries(groupedByMetrics[metric])) {
+  for (const [name, site] of Object.entries(dashboardResults[metric])) {
     const XYs = Object.entries(site)
       .map(([batchName, batch], index) => {
         return {
