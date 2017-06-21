@@ -102,11 +102,13 @@ body {
   top: 0;
   background: #e3f2f7;
 }
+
 #overlay .close-button {
   position: absolute;
   top: calc(var(--header-height) + 30px);
   left: 50px;
 }
+
 #overlay .chart {
   position: absolute;
   top: calc(var(--header-height) + 100px);

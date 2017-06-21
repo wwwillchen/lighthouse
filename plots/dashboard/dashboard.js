@@ -8,7 +8,6 @@
 /* global Plotly, dashboardResults */
 /* eslint-env browser */
 
-// dashboardResults
 let elementId = 1;
 
 /**
@@ -34,34 +33,35 @@ function renderPlots() {
   });
 }
 
-let currentMetric;
-let numberOfPoints = 0;
+const metrics = Object.keys(dashboardResults);
+/**
+ * Navigation Start is usually not a very informative metric
+ * so we're selecting any other metric as the default.
+ */
+let currentMetric = metrics.filter(m => m !== 'Navigation Start')[0];
+let numberOfBatchesToShow = 0;
 
 function main() {
-  const metrics = Object.keys(dashboardResults).filter(m => m !== 'Navigation Start');
-
   initializeSelectMetricControl(metrics);
-  initializeSelectNumberOfPoints();
-
+  initializeSelectNumberOfBatchesToShow();
   currentMetric = metrics[0];
-  generateChartsForMetric();
+  generateCharts();
 }
 
 main();
 
-function initializeSelectNumberOfPoints() {
-  const control = document.getElementById('select-number-of-points');
+function initializeSelectNumberOfBatchesToShow() {
+  const control = document.getElementById('select-number-of-batches');
   control.addEventListener('change', onSelectNumberOfPoints, false);
 }
 
 function onSelectNumberOfPoints(event) {
   if (event.target.value === 'all') {
-    numberOfPoints = 0;
+    numberOfBatchesToShow = 0;
   } else {
-    numberOfPoints = parseInt(event.target.value, 10);
+    numberOfBatchesToShow = parseInt(event.target.value, 10);
   }
-  removeChildren(document.getElementById('charts'));
-  generateChartsForMetric();
+  regenerateCharts();
 }
 
 function initializeSelectMetricControl(metrics) {
@@ -76,35 +76,40 @@ function initializeSelectMetricControl(metrics) {
 }
 
 function onSelectMetric(event) {
-  removeChildren(document.getElementById('charts'));
   currentMetric = event.target.value;
-  generateChartsForMetric();
+  regenerateCharts();
 }
 
-function generateChartsForMetric() {
+function regenerateCharts() {
+  removeChildren(document.getElementById('charts'));
+  generateCharts();
+}
+
+function generateCharts() {
   const metric = currentMetric;
-  for (const [name, site] of Object.entries(dashboardResults[metric])) {
-    const XYs = Object.entries(site)
+  for (const [metricName, site] of Object.entries(dashboardResults[metric])) {
+    const percentiles = Object.entries(site)
       .map(([batchName, batch]) => {
         return {
           x: batchName,
-          median: percentile(batch.map(metric => metric.timing), 0.5),
-          higher: percentile(batch.map(metric => metric.timing), 0.8),
-          lower: percentile(batch.map(metric => metric.timing), 0.2)
+          higher: calculatePercentile(batch.map(metric => metric.timing), 0.8),
+          median: calculatePercentile(batch.map(metric => metric.timing), 0.5),
+          lower: calculatePercentile(batch.map(metric => metric.timing), 0.2)
         };
       })
-      .slice(-1 * numberOfPoints);
+      .slice(-1 * numberOfBatchesToShow);
 
     const median = {
-      x: XYs.map(r => r.x),
-      y: XYs.map(r => r.median),
+      x: percentiles.map(r => r.x),
+      y: percentiles.map(r => r.median),
       type: 'scatter',
       mode: 'line',
       name: 'median'
     };
-    const upper = {
-      x: XYs.map(r => r.x).concat(XYs.map(r => r.x).reverse()),
-      y: XYs.map(r => r.higher).concat(XYs.map(r => r.lower).reverse()),
+
+    const errorBands = {
+      x: percentiles.map(r => r.x).concat(percentiles.map(r => r.x).reverse()),
+      y: percentiles.map(r => r.higher).concat(percentiles.map(r => r.lower).reverse()),
       fill: 'toself',
       fillcolor: 'rgba(0,176,246,0.2)',
       line: {color: 'transparent'},
@@ -112,8 +117,7 @@ function generateChartsForMetric() {
       showlegend: false,
       type: 'scatter'
     };
-    const data = [median, upper];
-    generateSmallChart(data, name);
+    generateSmallChart([median, errorBands], metricName);
   }
 }
 
@@ -155,7 +159,10 @@ function generateBigChart(data, title, element) {
 }
 
 function createSmallChartElement(data, title) {
-  const chart = createChartElement();
+  const chart = document.createElement('div');
+  chart.style = 'display: inline-block; position: relative';
+  chart.id = 'chart' + elementId++;
+
   const button = document.createElement('button');
   button.className = 'dth-button show-bigger-button';
   button.appendChild(document.createTextNode('Focus'));
@@ -191,13 +198,6 @@ function createSmallChartElement(data, title) {
   }
 }
 
-function createChartElement() {
-  const div = document.createElement('div');
-  div.style = 'display: inline-block; position: relative';
-  div.id = 'chart' + elementId++;
-  return div;
-}
-
 /**
  * @param {!Element} parent
  */
@@ -213,7 +213,7 @@ function removeChildren(parent) {
  * @param {!Array<number>} array
  * @param {number} percentile should be from 0 to 1
  */
-function percentile(array, percentile) {
+function calculatePercentile(array, percentile) {
   if (array.length === 0) {
     return 0;
   }
