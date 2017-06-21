@@ -3,7 +3,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
-"use strict";
+'use strict';
 
 /* global Plotly, dashboardResults */
 /* eslint-env browser */
@@ -38,9 +38,7 @@ let currentMetric;
 let numberOfPoints = 0;
 
 function main() {
-  const metrics = Object.keys(dashboardResults).filter(
-    m => m !== "Navigation Start"
-  );
+  const metrics = Object.keys(dashboardResults).filter(m => m !== 'Navigation Start');
 
   initializeSelectMetricControl(metrics);
   initializeSelectNumberOfPoints();
@@ -52,33 +50,33 @@ function main() {
 main();
 
 function initializeSelectNumberOfPoints() {
-  const control = document.getElementById("select-number-of-points");
-  control.addEventListener("change", onSelectNumberOfPoints, false);
+  const control = document.getElementById('select-number-of-points');
+  control.addEventListener('change', onSelectNumberOfPoints, false);
 }
 
 function onSelectNumberOfPoints(event) {
-  if (event.target.value === "all") {
+  if (event.target.value === 'all') {
     numberOfPoints = 0;
   } else {
     numberOfPoints = parseInt(event.target.value, 10);
   }
-  removeChildren(document.getElementById("charts"));
+  removeChildren(document.getElementById('charts'));
   generateChartsForMetric();
 }
 
 function initializeSelectMetricControl(metrics) {
-  const metricsControl = document.getElementById("select-metric");
+  const metricsControl = document.getElementById('select-metric');
   for (const metric of metrics) {
-    const option = document.createElement("option");
+    const option = document.createElement('option');
     option.label = metric;
     option.value = metric;
     metricsControl.appendChild(option);
   }
-  metricsControl.addEventListener("change", onSelectMetric, false);
+  metricsControl.addEventListener('change', onSelectMetric, false);
 }
 
 function onSelectMetric(event) {
-  removeChildren(document.getElementById("charts"));
+  removeChildren(document.getElementById('charts'));
   currentMetric = event.target.value;
   generateChartsForMetric();
 }
@@ -87,7 +85,7 @@ function generateChartsForMetric() {
   const metric = currentMetric;
   for (const [name, site] of Object.entries(dashboardResults[metric])) {
     const XYs = Object.entries(site)
-      .map(([batchName, batch], index) => {
+      .map(([batchName, batch]) => {
         return {
           x: batchName,
           median: percentile(batch.map(metric => metric.timing), 0.5),
@@ -100,26 +98,26 @@ function generateChartsForMetric() {
     const median = {
       x: XYs.map(r => r.x),
       y: XYs.map(r => r.median),
-      type: "scatter",
-      mode: "line",
-      name: "median"
+      type: 'scatter',
+      mode: 'line',
+      name: 'median'
     };
     const upper = {
       x: XYs.map(r => r.x).concat(XYs.map(r => r.x).reverse()),
       y: XYs.map(r => r.higher).concat(XYs.map(r => r.lower).reverse()),
-      fill: "toself",
-      fillcolor: "rgba(0,176,246,0.2)",
-      line: { color: "transparent" },
-      name: "error bands",
+      fill: 'toself',
+      fillcolor: 'rgba(0,176,246,0.2)',
+      line: {color: 'transparent'},
+      name: 'error bands',
       showlegend: false,
-      type: "scatter"
+      type: 'scatter'
     };
     const data = [median, upper];
     generateSmallChart(data, name);
   }
 }
 
-var layout = {
+const layout = {
   width: 400,
   height: 300,
   xaxis: {
@@ -130,22 +128,18 @@ var layout = {
   },
   yaxis: {
     zeroline: true,
-    rangemode: "tozero"
+    rangemode: 'tozero'
   },
   showlegend: false,
   titlefont: {
-    family: `"Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif`,
+    family: `"Roboto", -apple-system, BlinkMacSystemFont, sans-serif`,
     size: 14
   }
 };
 
 function generateSmallChart(data, title) {
   enqueuePlot(_ => {
-    Plotly.newPlot(
-      createSmallChartElement(data, title),
-      data,
-      Object.assign({ title }, layout)
-    );
+    Plotly.newPlot(createSmallChartElement(data, title), data, Object.assign({title}, layout));
   });
 }
 
@@ -153,7 +147,7 @@ function generateBigChart(data, title, element) {
   Plotly.newPlot(
     element,
     data,
-    Object.assign({ title }, layout, {
+    Object.assign({title}, layout, {
       width: document.body.clientWidth - 100,
       height: 500
     })
@@ -162,45 +156,45 @@ function generateBigChart(data, title, element) {
 
 function createSmallChartElement(data, title) {
   const chart = createChartElement();
-  const button = document.createElement("button");
-  button.className = "dth-button show-bigger-button";
-  button.appendChild(document.createTextNode("Focus"));
-  button.addEventListener("click", onFocusChart, false);
+  const button = document.createElement('button');
+  button.className = 'dth-button show-bigger-button';
+  button.appendChild(document.createTextNode('Focus'));
+  button.addEventListener('click', onFocusChart, false);
   chart.appendChild(button);
 
-  const container = document.getElementById("charts");
+  const container = document.getElementById('charts');
   container.appendChild(chart);
   return chart.id;
 
-  function onFocusChart(e) {
-    const overlay = document.createElement("div");
-    overlay.id = "overlay";
+  function onFocusChart() {
+    const overlay = document.createElement('div');
+    overlay.id = 'overlay';
     document.body.appendChild(overlay);
 
-    document.getElementById("charts").style.display = "none";
+    document.getElementById('charts').style.display = 'none';
 
-    const closeButton = document.createElement("button");
-    closeButton.className = "dth-button close-button";
-    closeButton.appendChild(document.createTextNode("Close"));
-    closeButton.addEventListener("click", onClose, false);
+    const closeButton = document.createElement('button');
+    closeButton.className = 'dth-button close-button';
+    closeButton.appendChild(document.createTextNode('Close'));
+    closeButton.addEventListener('click', onClose, false);
     overlay.appendChild(closeButton);
 
-    const chart = document.createElement("div");
-    chart.className = "chart";
+    const chart = document.createElement('div');
+    chart.className = 'chart';
     overlay.appendChild(chart);
     generateBigChart(data, title, chart);
 
     function onClose() {
-      document.getElementById("charts").style.display = "block";
+      document.getElementById('charts').style.display = 'block';
       document.body.removeChild(overlay);
     }
   }
 }
 
 function createChartElement() {
-  const div = document.createElement("div");
-  div.style = "display: inline-block; position: relative";
-  div.id = "chart" + elementId++;
+  const div = document.createElement('div');
+  div.style = 'display: inline-block; position: relative';
+  div.id = 'chart' + elementId++;
   return div;
 }
 

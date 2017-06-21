@@ -3,22 +3,21 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
-"use strict";
-const childProcess = require("child_process");
-const fs = require("fs");
-const path = require("path");
+'use strict';
+const childProcess = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
-const opn = require("opn");
-const args = require("yargs")
+const opn = require('opn');
+const args = require('yargs')
   .describe({
-    input: "path to artifacts from measure.js (pass in comma separated list)",
-    "input-root":
-      "path to directory where every sub-directory is used as an input"
+    'input': 'path to artifacts from measure.js (pass in comma separated list)',
+    'input-root': 'path to directory where every sub-directory is used as an input'
   })
-  .array("input").argv;
+  .array('input').argv;
 
-const constants = require("./constants");
-const utils = require("./utils");
+const constants = require('./constants');
+const utils = require('./utils');
 
 /**
  * Run analyze.js on each of the outs and then
@@ -32,11 +31,11 @@ function main() {
   for (const inputPath of inputPaths) {
     const result = fs.readFileSync(
       path.resolve(inputPath, constants.GENERATED_RESULTS_FILENAME),
-      "utf-8"
+      'utf-8'
     );
-    aggregatedResults[path.basename(inputPath)] = /** @type {!ResultsByMetric} */ (JSON.parse(
-      result.replace("var generatedResults = ", "")
-    ));
+    aggregatedResults[path.basename(inputPath)] /** @type {!ResultsByMetric} */ = JSON.parse(
+      result.replace('var generatedResults = ', '')
+    );
   }
 
   const groupByMetricResults = groupByMetric(aggregatedResults);
@@ -45,10 +44,10 @@ function main() {
     fs.mkdirSync(constants.OUT_PATH);
   }
   fs.writeFileSync(
-    path.resolve(constants.OUT_PATH, "dashboard-results.js"),
+    path.resolve(constants.OUT_PATH, 'dashboard-results.js'),
     `const dashboardResults = ${JSON.stringify(groupByMetricResults, undefined, 2)}`
   );
-  opn(path.resolve(__dirname, "dashboard", "index.html"));
+  opn(path.resolve(__dirname, 'dashboard', 'index.html'));
 }
 
 main();
@@ -59,22 +58,25 @@ main();
  * @return {!GroupByMetricResults}
  */
 function groupByMetric(aggregatedResults) {
-  return Object.keys(aggregatedResults).reduce((acc, batchId) => {
-    const batchResults = aggregatedResults[batchId];
-    Object.keys(batchResults).forEach(metricId => {
-      if (!acc[metricId]) {
-        acc[metricId] = {};
-      }
-      const sites = batchResults[metricId];
-      sites.forEach(site => {
-        if (!acc[metricId][site.site]) {
-          acc[metricId][site.site] = {};
+  return Object.keys(aggregatedResults).reduce(
+    (acc, batchId) => {
+      const batchResults = aggregatedResults[batchId];
+      Object.keys(batchResults).forEach(metricId => {
+        if (!acc[metricId]) {
+          acc[metricId] = {};
         }
-        acc[metricId][site.site][batchId] = site.metrics;
+        const sites = batchResults[metricId];
+        sites.forEach(site => {
+          if (!acc[metricId][site.site]) {
+            acc[metricId][site.site] = {};
+          }
+          acc[metricId][site.site][batchId] = site.metrics;
+        });
       });
-    });
-    return acc;
-  }, {});
+      return acc;
+    },
+    {}
+  );
 }
 
 /**
@@ -84,7 +86,7 @@ function analyzeEachInputPath(inputPaths) {
   for (const input of inputPaths) {
     childProcess.execSync(`node analyze.js ${input}`, {
       env: Object.assign({}, process.env, {
-        CI: "1"
+        CI: '1'
       })
     });
   }
@@ -98,16 +100,13 @@ function getInputPaths() {
   if (args.inputRoot) {
     return fs
       .readdirSync(path.resolve(__dirname, args.inputRoot))
-      .map(pathComponent =>
-        path.resolve(__dirname, args.inputRoot, pathComponent)
-      );
+      .map(pathComponent => path.resolve(__dirname, args.inputRoot, pathComponent));
   }
   if (args.input) {
     return args.input.map(p => path.resolve(__dirname, p));
   }
-  console.log(
-    "ERROR: must pass in --input-root or --input (see --help for more info)"
-  );
+  // eslint-disable-next-line no-console
+  console.log('ERROR: must pass in --input-root or --input (see --help for more info)');
   process.exit(1);
 }
 
