@@ -26,7 +26,10 @@ $ node measure.js --out out-123
 $ node analyze.js ./out-hello
 
 # Generate dashboard for multiple batch results
-$ node generate-dashboard.js --input-root ./out-examples
+$ node generate-dashboard.js --input-root out-with-out-subdirectories
+
+# Or you can specify each input directory explicitly
+$ node generated-dashboard.js --input out-1 out-2 out-3
 ```
 
 ### Advanced usage
