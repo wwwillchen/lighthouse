@@ -33,18 +33,16 @@ function renderPlots() {
   });
 }
 
-const metrics = Object.keys(dashboardResults);
 /**
- * Navigation Start is usually not a very informative metric
- * so we're selecting any other metric as the default.
+ * Navigation Start is usually not a very informative metric.
  */
-let currentMetric = metrics.filter(m => m !== 'Navigation Start')[0];
+const metrics = Object.keys(dashboardResults).filter(m => m !== 'Navigation Start');
+let currentMetric = metrics[0];
 let numberOfBatchesToShow = 0;
 
 function main() {
   initializeSelectMetricControl(metrics);
   initializeSelectNumberOfBatchesToShow();
-  currentMetric = metrics[0];
   generateCharts();
 }
 
