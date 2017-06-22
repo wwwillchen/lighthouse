@@ -8,170 +8,139 @@
 /* global Plotly, dashboardResults */
 /* eslint-env browser */
 
-let elementId = 1;
-
-/**
- * Incrementally renders the plot, otherwise it hangs the browser
- * because it's generating so many charts.
- */
-const queuedPlots = [];
-function enqueuePlot(fn) {
-  const isFirst = queuedPlots.length == 0;
-  queuedPlots.push(fn);
-  if (isFirst) {
-    renderPlots();
+class Dashboard {
+  constructor(metrics, charts) {
+    this._charts = charts;
+    this._currentMetric = metrics[0];
+    this._numberOfBatchesToShow = 0;
+    this._initializeSelectMetricControl(metrics);
+    this._initializeSelectNumberOfBatchesToShow();
+    this._renderCharts();
   }
-}
 
-function renderPlots() {
-  window.requestAnimationFrame(_ => {
-    const plotFn = queuedPlots.shift();
-    if (plotFn) {
-      plotFn();
-      renderPlots();
+  _initializeSelectMetricControl(metrics) {
+    const metricsControl = document.getElementById('select-metric');
+    for (const metric of metrics) {
+      const option = document.createElement('option');
+      option.label = metric;
+      option.value = metric;
+      metricsControl.appendChild(option);
     }
-  });
-}
-
-/**
- * Navigation Start is usually not a very informative metric.
- */
-const metrics = Object.keys(dashboardResults).filter(m => m !== 'Navigation Start');
-let currentMetric = metrics[0];
-let numberOfBatchesToShow = 0;
-
-function main() {
-  initializeSelectMetricControl(metrics);
-  initializeSelectNumberOfBatchesToShow();
-  generateCharts();
-}
-
-main();
-
-function initializeSelectNumberOfBatchesToShow() {
-  const control = document.getElementById('select-number-of-batches');
-  control.addEventListener('change', onSelectNumberOfPoints, false);
-}
-
-function onSelectNumberOfPoints(event) {
-  if (event.target.value === 'all') {
-    numberOfBatchesToShow = 0;
-  } else {
-    numberOfBatchesToShow = parseInt(event.target.value, 10);
+    metricsControl.addEventListener('change', e => this._onSelectMetric(e), false);
   }
-  regenerateCharts();
-}
 
-function initializeSelectMetricControl(metrics) {
-  const metricsControl = document.getElementById('select-metric');
-  for (const metric of metrics) {
-    const option = document.createElement('option');
-    option.label = metric;
-    option.value = metric;
-    metricsControl.appendChild(option);
+  _initializeSelectNumberOfBatchesToShow() {
+    const control = document.getElementById('select-number-of-batches');
+    control.addEventListener('change', e => this._onSelectNumberOfPoints(e), false);
   }
-  metricsControl.addEventListener('change', onSelectMetric, false);
+
+  _onSelectNumberOfPoints(event) {
+    if (event.target.value === 'all') {
+      this._numberOfBatchesToShow = 0;
+    } else {
+      this._numberOfBatchesToShow = parseInt(event.target.value, 10);
+    }
+    this._renderCharts();
+  }
+
+  _onSelectMetric(event) {
+    this._currentMetric = event.target.value;
+    this._renderCharts();
+  }
+
+  _renderCharts() {
+    this._charts.render(this._currentMetric, this._numberOfBatchesToShow);
+  }
 }
 
-function onSelectMetric(event) {
-  currentMetric = event.target.value;
-  regenerateCharts();
-}
-
-function regenerateCharts() {
-  removeChildren(document.getElementById('charts'));
-  generateCharts();
-}
-
-function generateCharts() {
-  const metric = currentMetric;
-  for (const [metricName, site] of Object.entries(dashboardResults[metric])) {
-    const percentiles = Object.entries(site)
-      .map(([batchName, batch]) => {
-        return {
-          x: batchName,
-          higher: calculatePercentile(batch.map(metric => metric.timing), 0.8),
-          median: calculatePercentile(batch.map(metric => metric.timing), 0.5),
-          lower: calculatePercentile(batch.map(metric => metric.timing), 0.2)
-        };
-      })
-      .slice(-1 * numberOfBatchesToShow);
-
-    const median = {
-      x: percentiles.map(r => r.x),
-      y: percentiles.map(r => r.median),
-      type: 'scatter',
-      mode: 'line',
-      name: 'median'
-    };
-
-    const errorBands = {
-      x: percentiles.map(r => r.x).concat(percentiles.map(r => r.x).reverse()),
-      y: percentiles.map(r => r.higher).concat(percentiles.map(r => r.lower).reverse()),
-      fill: 'toself',
-      fillcolor: 'rgba(0,176,246,0.2)',
-      line: {color: 'transparent'},
-      name: 'error bands',
+class Charts {
+  constructor(renderingScheduler) {
+    this._renderingScheduler = renderingScheduler;
+    this._elementId = 1;
+    this._layout = {
+      width: 400,
+      height: 300,
+      xaxis: {
+        showgrid: false,
+        zeroline: false,
+        tickangle: 60,
+        showticklabels: false
+      },
+      yaxis: {
+        zeroline: true,
+        rangemode: 'tozero'
+      },
       showlegend: false,
-      type: 'scatter'
+      titlefont: {
+        family: `"Roboto", -apple-system, BlinkMacSystemFont, sans-serif`,
+        size: 14
+      }
     };
-    generateSmallChart([median, errorBands], metricName);
   }
-}
 
-const layout = {
-  width: 400,
-  height: 300,
-  xaxis: {
-    showgrid: false,
-    zeroline: false,
-    tickangle: 60,
-    showticklabels: false
-  },
-  yaxis: {
-    zeroline: true,
-    rangemode: 'tozero'
-  },
-  showlegend: false,
-  titlefont: {
-    family: `"Roboto", -apple-system, BlinkMacSystemFont, sans-serif`,
-    size: 14
+  render(currentMetric, numberOfBatchesToShow) {
+    Utils.removeChildren(document.getElementById('charts'));
+    for (const [metricName, site] of Object.entries(dashboardResults[currentMetric])) {
+      const percentiles = Object.entries(site)
+        .map(([batchName, batch]) => {
+          return {
+            x: batchName,
+            higher: Utils.calculatePercentile(batch.map(metric => metric.timing), 0.8),
+            median: Utils.calculatePercentile(batch.map(metric => metric.timing), 0.5),
+            lower: Utils.calculatePercentile(batch.map(metric => metric.timing), 0.2)
+          };
+        })
+        .slice(-1 * numberOfBatchesToShow);
+
+      const median = {
+        x: percentiles.map(r => r.x),
+        y: percentiles.map(r => r.median),
+        type: 'scatter',
+        mode: 'line',
+        name: 'median'
+      };
+
+      const errorBands = {
+        x: percentiles.map(r => r.x).concat(percentiles.map(r => r.x).reverse()),
+        y: percentiles.map(r => r.higher).concat(percentiles.map(r => r.lower).reverse()),
+        fill: 'toself',
+        fillcolor: 'rgba(0,176,246,0.2)',
+        line: {color: 'transparent'},
+        name: 'error bands',
+        showlegend: false,
+        type: 'scatter'
+      };
+      this._renderPreviewChart([median, errorBands], metricName);
+    }
   }
-};
 
-function generateSmallChart(data, title) {
-  enqueuePlot(_ => {
-    Plotly.newPlot(createSmallChartElement(data, title), data, Object.assign({title}, layout));
-  });
-}
+  _renderPreviewChart(data, title) {
+    this._renderingScheduler.enqueue(_ => {
+      Plotly.newPlot(
+        this._createPreviewChartElement(data, title),
+        data,
+        Object.assign({title}, this._layout)
+      );
+    });
+  }
 
-function generateBigChart(data, title, element) {
-  Plotly.newPlot(
-    element,
-    data,
-    Object.assign({title}, layout, {
-      width: document.body.clientWidth - 100,
-      height: 500
-    })
-  );
-}
+  _createPreviewChartElement(data, title) {
+    const chart = document.createElement('div');
+    chart.style = 'display: inline-block; position: relative';
+    chart.id = 'chart' + this._elementId++;
 
-function createSmallChartElement(data, title) {
-  const chart = document.createElement('div');
-  chart.style = 'display: inline-block; position: relative';
-  chart.id = 'chart' + elementId++;
+    const button = document.createElement('button');
+    button.className = 'dth-button show-bigger-button';
+    button.appendChild(document.createTextNode('Focus'));
+    button.addEventListener('click', () => this._onFocusChart(data, title), false);
+    chart.appendChild(button);
 
-  const button = document.createElement('button');
-  button.className = 'dth-button show-bigger-button';
-  button.appendChild(document.createTextNode('Focus'));
-  button.addEventListener('click', onFocusChart, false);
-  chart.appendChild(button);
+    const container = document.getElementById('charts');
+    container.appendChild(chart);
+    return chart.id;
+  }
 
-  const container = document.getElementById('charts');
-  container.appendChild(chart);
-  return chart.id;
-
-  function onFocusChart() {
+  _onFocusChart(data, title) {
     const overlay = document.createElement('div');
     overlay.id = 'overlay';
     document.body.appendChild(overlay);
@@ -181,55 +150,105 @@ function createSmallChartElement(data, title) {
     const closeButton = document.createElement('button');
     closeButton.className = 'dth-button close-button';
     closeButton.appendChild(document.createTextNode('Close'));
-    closeButton.addEventListener('click', onClose, false);
+    closeButton.addEventListener('click', onCloseFocusedChart, false);
     overlay.appendChild(closeButton);
 
     const chart = document.createElement('div');
     chart.className = 'chart';
     overlay.appendChild(chart);
-    generateBigChart(data, title, chart);
+    this._renderFocusedChart(data, title, chart);
 
-    function onClose() {
+    function onCloseFocusedChart() {
       document.getElementById('charts').style.display = 'block';
       document.body.removeChild(overlay);
     }
   }
-}
 
-/**
- * @param {!Element} parent
- */
-function removeChildren(parent) {
-  while (parent.firstChild) {
-    parent.removeChild(parent.firstChild);
+  _renderFocusedChart(data, title, element) {
+    Plotly.newPlot(
+      element,
+      data,
+      Object.assign({title}, this._layout, {
+        width: document.body.clientWidth - 100,
+        height: 500
+      })
+    );
   }
 }
 
-/**
+class RenderingScheduler {
+  constructor() {
+    this._queue = [];
+  }
+
+  enqueue(fn) {
+    const isFirst = this._queue.length == 0;
+    this._queue.push(fn);
+    if (isFirst) {
+      this._render();
+    }
+  }
+
+  _render() {
+    window.requestAnimationFrame(_ => {
+      const plotFn = this._queue.shift();
+      if (plotFn) {
+        plotFn();
+        this._render();
+      }
+    });
+  }
+}
+
+const Utils = {
+  /**
+ * @param {!Element} parent
+ */
+  removeChildren(parent) {
+    while (parent.firstChild) {
+      parent.removeChild(parent.firstChild);
+    }
+  },
+
+  /**
  * Calculate the value at a given percentile
  * Based on: https://gist.github.com/IceCreamYou/6ffa1b18c4c8f6aeaad2
  * @param {!Array<number>} array
  * @param {number} percentile should be from 0 to 1
  */
-function calculatePercentile(array, percentile) {
-  if (array.length === 0) {
-    return 0;
-  }
-  if (percentile <= 0) {
-    return array[0];
-  }
-  if (percentile >= 1) {
-    return array[array.length - 1];
-  }
-  const sorted = array.slice().sort((a, b) => a - b);
+  calculatePercentile(array, percentile) {
+    if (array.length === 0) {
+      return 0;
+    }
+    if (percentile <= 0) {
+      return array[0];
+    }
+    if (percentile >= 1) {
+      return array[array.length - 1];
+    }
+    const sorted = array.slice().sort((a, b) => a - b);
 
-  const index = (sorted.length - 1) * percentile;
-  const lower = Math.floor(index);
-  const upper = lower + 1;
-  const weight = index % 1;
+    const index = (sorted.length - 1) * percentile;
+    const lower = Math.floor(index);
+    const upper = lower + 1;
+    const weight = index % 1;
 
-  if (upper >= sorted.length) {
-    return sorted[lower];
+    if (upper >= sorted.length) {
+      return sorted[lower];
+    }
+    return sorted[lower] * (1 - weight) + sorted[upper] * weight;
   }
-  return sorted[lower] * (1 - weight) + sorted[upper] * weight;
+};
+
+function main() {
+  /**
+   * Navigation Start is usually not a very informative metric.
+   */
+  const metrics = Object.keys(dashboardResults).filter(m => m !== 'Navigation Start');
+
+  const renderingScheduler = new RenderingScheduler();
+  const charts = new Charts(renderingScheduler);
+  const dashboard = new Dashboard(metrics, charts);
 }
+
+main();
