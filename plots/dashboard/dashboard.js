@@ -15,7 +15,10 @@ class Dashboard {
     this._numberOfBatchesToShow = 0;
     this._initializeSelectMetricControl(metrics);
     this._initializeSelectNumberOfBatchesToShow();
-    this._renderCharts();
+  }
+
+  render() {
+    this._charts.render(this._currentMetric, this._numberOfBatchesToShow);
   }
 
   _initializeSelectMetricControl(metrics) {
@@ -29,27 +32,23 @@ class Dashboard {
     metricsControl.addEventListener('change', e => this._onSelectMetric(e), false);
   }
 
-  _initializeSelectNumberOfBatchesToShow() {
-    const control = document.getElementById('select-number-of-batches');
-    control.addEventListener('change', e => this._onSelectNumberOfPoints(e), false);
+  _onSelectMetric(event) {
+    this._currentMetric = event.target.value;
+    this.render();
   }
 
-  _onSelectNumberOfPoints(event) {
+  _initializeSelectNumberOfBatchesToShow() {
+    const control = document.getElementById('select-number-of-batches');
+    control.addEventListener('change', e => this._onSelectNumberOfBatchesToShow(e), false);
+  }
+
+  _onSelectNumberOfBatchesToShow(event) {
     if (event.target.value === 'all') {
       this._numberOfBatchesToShow = 0;
     } else {
       this._numberOfBatchesToShow = parseInt(event.target.value, 10);
     }
-    this._renderCharts();
-  }
-
-  _onSelectMetric(event) {
-    this._currentMetric = event.target.value;
-    this._renderCharts();
-  }
-
-  _renderCharts() {
-    this._charts.render(this._currentMetric, this._numberOfBatchesToShow);
+    this.render();
   }
 }
 
@@ -202,8 +201,8 @@ class RenderingScheduler {
 
 const Utils = {
   /**
- * @param {!Element} parent
- */
+   * @param {!Element} parent
+   */
   removeChildren(parent) {
     while (parent.firstChild) {
       parent.removeChild(parent.firstChild);
@@ -211,11 +210,11 @@ const Utils = {
   },
 
   /**
- * Calculate the value at a given percentile
- * Based on: https://gist.github.com/IceCreamYou/6ffa1b18c4c8f6aeaad2
- * @param {!Array<number>} array
- * @param {number} percentile should be from 0 to 1
- */
+   * Calculate the value at a given percentile
+   * Based on: https://gist.github.com/IceCreamYou/6ffa1b18c4c8f6aeaad2
+   * @param {!Array<number>} array
+   * @param {number} percentile should be from 0 to 1
+   */
   calculatePercentile(array, percentile) {
     if (array.length === 0) {
       return 0;
@@ -249,6 +248,7 @@ function main() {
   const renderingScheduler = new RenderingScheduler();
   const charts = new Charts(renderingScheduler);
   const dashboard = new Dashboard(metrics, charts);
+  dashboard.render();
 }
 
 main();
