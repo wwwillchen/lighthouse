@@ -29,7 +29,7 @@ $ node analyze.js ./out-hello
 $ node generate-dashboard.js --input-root dir-with-subdirectories
 
 # Or you can specify each input directory explicitly
-$ node generated-dashboard.js --inputs out-1 out-2 out-3
+$ node generate-dashboard.js --inputs out-1 out-2 out-3
 ```
 
 ### Advanced usage
