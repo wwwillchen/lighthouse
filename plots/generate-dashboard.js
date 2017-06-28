@@ -15,7 +15,7 @@ const args = require('yargs')
   .example('node $0 out-1 out-2 out-3')
   .help('help')
   .demand(1)
-  .array('inputs').argv;
+  .argv;
 
 const constants = require('./constants');
 const utils = require('./utils');
@@ -107,8 +107,7 @@ function getInputPaths() {
   relativePaths.forEach(relativePath => {
     const fullPath = path.resolve(__dirname, relativePath);
     if (isOutParentFolder(fullPath)) {
-      const paths = fs
-        .readdirSync(fullPath)
+      const paths = fs.readdirSync(fullPath)
         .map(pathComponent => path.resolve(fullPath, pathComponent))
         .filter(inputPath => utils.isDir(inputPath));
       inputPaths = inputPaths.concat(paths);
@@ -120,7 +119,7 @@ function getInputPaths() {
 }
 
 /**
- * Detects if a directory's childrens are valid input paths
+ * Detects if any of the directory's children is a valid input path
  * @param {boolean} fullPath
  */
 function isOutParentFolder(fullPath) {
