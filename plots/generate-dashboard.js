@@ -116,7 +116,6 @@ function getInputPaths() {
     }
     inputPaths.push(fullPath);
   });
-  console.log('inputPaths', inputPaths);
   return inputPaths;
 }
 
@@ -136,7 +135,8 @@ function isOutParentFolder(fullPath) {
         continue;
       }
       for (const maybeRunFolder of fs.readdirSync(maybeSitePath)) {
-        const maybeLighthouseResults = path.resolve(maybeSitePath, maybeRunFolder, constants.LIGHTHOUSE_RESULTS_FILENAME);
+        const maybeLighthouseResults = path.resolve(
+          maybeSitePath, maybeRunFolder, constants.LIGHTHOUSE_RESULTS_FILENAME);
         if (utils.isFile(maybeLighthouseResults)) {
           return true;
         }
