@@ -225,7 +225,7 @@ const Utils = {
     if (percentile >= 1) {
       return array[array.length - 1];
     }
-    const sorted = array.slice().sort((a, b) => a - b);
+    const sorted = array.slice().sort((a, b) => a - b).filter(x => x !== null);
 
     const index = (sorted.length - 1) * percentile;
     const lower = Math.floor(index);
@@ -233,7 +233,7 @@ const Utils = {
     const weight = index % 1;
 
     if (upper >= sorted.length) {
-      return sorted[lower];
+      return sorted[lower] || 0;
     }
     return sorted[lower] * (1 - weight) + sorted[upper] * weight;
   }
