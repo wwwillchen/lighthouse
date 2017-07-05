@@ -216,25 +216,23 @@ const Utils = {
    * @param {number} percentile should be from 0 to 1
    */
   calculatePercentile(array, percentile) {
-    if (array.length === 0) {
+    const sorted = array.filter(x => x !== null).sort((a, b) => a - b);
+
+    if (sorted.length === 0) {
       return 0;
     }
-    if (percentile <= 0) {
-      return array[0];
+    if (sorted.length === 1 || percentile <= 0) {
+      return sorted[0];
     }
     if (percentile >= 1) {
-      return array[array.length - 1];
+      return sorted[sorted.length - 1];
     }
-    const sorted = array.slice().sort((a, b) => a - b).filter(x => x !== null);
 
     const index = (sorted.length - 1) * percentile;
     const lower = Math.floor(index);
     const upper = lower + 1;
     const weight = index % 1;
 
-    if (upper >= sorted.length) {
-      return sorted[lower] || 0;
-    }
     return sorted[lower] * (1 - weight) + sorted[upper] * weight;
   }
 };
