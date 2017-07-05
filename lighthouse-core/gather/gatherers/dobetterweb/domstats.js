@@ -9,7 +9,7 @@
  * and total number of nodes used on the page.
  */
 
-/* global document ShadowRoot */
+/* global ShadowRoot */
 
 'use strict';
 
@@ -48,9 +48,12 @@ function createSelectorsLabel(element) {
  */
 /* istanbul ignore next */
 function elementPathInDOM(element) {
+  const visited = new Set();
   const path = [createSelectorsLabel(element)];
   let node = element;
   while (node) {
+    visited.add(node);
+
     // Anchor elements have a .host property. Be sure we've found a shadow root
     // host and not an anchor.
     if (ShadowRoot.prototype.isPrototypeOf(node)) {
@@ -60,6 +63,10 @@ function elementPathInDOM(element) {
       const isShadowHost = node.parentNode && node.parentNode.host &&
                            node.parentNode.localName !== 'a';
       node = isShadowHost ? node.parentNode.host : node.parentElement;
+    }
+
+    if (visited.has(node)) {
+      node = null;
     }
 
     if (node) {
@@ -108,7 +115,6 @@ function getDOMStats(element, deep=true) {
   const result = _calcDOMWidthAndHeight(element);
 
   return {
-    totalDOMNodes: document.querySelectorAll('html, html /deep/ *').length,
     depth: {
       max: result.maxDepth,
       pathToElement: elementPathInDOM(deepestNode),
@@ -131,7 +137,12 @@ class DOMStats extends Gatherer {
       ${elementPathInDOM.toString()};
       return (${getDOMStats.toString()}(document.documentElement));
     })()`;
-    return options.driver.evaluateAsync(expression);
+    return options.driver.sendCommand('DOM.enable')
+      .then(() => options.driver.evaluateAsync(expression))
+      .then(results => options.driver.getElementsInDocument().then(allNodes => {
+        results.totalDOMNodes = allNodes.length;
+        return options.driver.sendCommand('DOM.disable').then(() => results);
+      }));
   }
 }
 

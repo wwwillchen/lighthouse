@@ -5,23 +5,22 @@
  */
 'use strict';
 
-const gulp = require('gulp');
-const compile = require('./gulp/compile');
-const config = require('./gulp/config');
-
-gulp.task('compileReport', compile.compileReport);
-gulp.task('compilePartials', compile.compilePartials);
-
-gulp.task('compile-templates', ['compileReport', 'compilePartials']);
-
-gulp.task('watch', ['compileReport', 'compilePartials'], () => {
-  gulp.watch([
-    config.report
-  ], ['compileReport']);
-
-  gulp.watch([
-    config.partials
-  ], ['compilePartials']);
-});
-
-gulp.task('default', ['compile-templates']);
+/**
+ * Expected Lighthouse audit values for --perf tests
+ */
+module.exports = [
+  {
+    initialUrl: 'http://localhost:10200/tricky-ttci.html',
+    url: 'http://localhost:10200/tricky-ttci.html',
+    audits: {
+      'first-interactive': {
+        score: '<75',
+        rawValue: '>9000',
+      },
+      'consistently-interactive': {
+        score: '<75',
+        rawValue: '>9000',
+      },
+    }
+  },
+];

@@ -5,10 +5,19 @@
  */
 'use strict';
 
-module.exports = {
-  report: 'lighthouse-core/report/templates/*.html',
-  reportDist: 'lighthouse-core/report/templates/',
-  partials: 'lighthouse-core/report/partials/*.html',
-  partialsDist: 'lighthouse-core/report/partials/templates/',
-  dist: 'dist'
-};
+/**
+ * Typing externs file needed for Viewer compilation.
+ * @externs
+ */
+
+/**
+ * @struct
+ * @constructor
+ */
+function ReportGenerator() {}
+
+/**
+ * @param {!ReportRenderer.ReportJSON} reportJson
+ * @return {string}
+ */
+ReportGenerator.prototype.generateReportHtml = function(reportJson) {};
